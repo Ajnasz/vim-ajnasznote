@@ -8,15 +8,16 @@ CONTENTS                                                 *presenting-contents*
 
   1. Introduction..........................|ajnasznote-introduction|
   2. Functions.............................|ajnasznote-functions|
-  2. Configuration.........................|ajnasznote-configuration|
-  2.1. Configuration.......................|ajnasznote_directory|
+  3. Commands..............................|ajnasznote-commands|
+  4. Configuration.........................|ajnasznote-configuration|
+  5.1. Configuration.......................|ajnasznote_directory|
 
 =============================================================================
 INTRODUCTION                                         *ajnasznote-introduction*
 
 This plugin provides a few helper functions to manage notes
 
-==============================================================================
+=============================================================================
 FUNCTIONS                                               *ajnasznote-functions*
 
 *ajnasznote#create_note()*
@@ -30,7 +31,19 @@ This functon will rename the note based on the it's first line
 For example good to call when you save a file
   `au BufWritePost */Notes/*.md call ajnasznote#rename_note()`
 
-==============================================================================
+
+=============================================================================
+COMMANDS                                                *ajnasznote-commands*
+
+*NoteCreate*
+
+Creates a new file (calls the |ajnasznote#create_note| command)
+
+*NoteExplore*
+
+Opens the |g:ajnasznote_directory| with `:Lexplore` command
+
+=============================================================================
 CONFIGURATION                                       *ajnasznote-configuration*
 
 *g:ajnasznote_directory*
