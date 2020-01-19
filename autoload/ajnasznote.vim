@@ -1,7 +1,26 @@
 function! s:fix_filename(...)
 	let l:name = a:1
 
-	let l:chars = [['á', 'a'], ['é', 'e'], ['í', 'i'], ['ó', 'o'], ['ö', 'o'], ['ő', 'o'], ['ú', 'u'], ['ü', 'u'], ['ű', 'u'], ['Á', 'A'], ['É', 'E'], ['Í', 'I'], ['Ó', 'O'], ['Ö', 'O'], ['Ő', 'O'], ['Ú', 'U'], ['Ü', 'U'], ['Ű', 'U']]
+	let l:chars = [
+		\ ['á', 'a'],
+		\ ['é', 'e'],
+		\ ['í', 'i'],
+		\ ['ó', 'o'],
+		\ ['ö', 'o'],
+		\ ['ő', 'o'],
+		\ ['ú', 'u'],
+		\ ['ü', 'u'],
+		\ ['ű', 'u'],
+		\ ['Á', 'A'],
+		\ ['É', 'E'],
+		\ ['Í', 'I'],
+		\ ['Ó', 'O'],
+		\ ['Ö', 'O'],
+		\ ['Ő', 'O'],
+		\ ['Ú', 'U'],
+		\ ['Ü', 'U'],
+		\ ['Ű', 'U'],
+		\]
 
 	for achar in l:chars
 		let l:name = substitute(l:name, achar[0], achar[1], 'g')
@@ -23,7 +42,6 @@ function! s:move_file(...)
 			return
 		endif
 	endif
-
 
 	if (filereadable(l:newName))
 		let l:fileName = fnamemodify(l:newName, ':t:r')
