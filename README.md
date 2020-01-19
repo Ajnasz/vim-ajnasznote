@@ -1,3 +1,3 @@
 # vim-ajnasznote
 
-Helper functions to manage markdown notes
+Helper functions to manage markdown notes in vim
