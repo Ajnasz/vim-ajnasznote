@@ -34,38 +34,38 @@ function! s:move_file(...)
 		echoerr 'M001: Expected exactly two parameters'
 	endif
 
-	let l:oldName = resolve(a:1)
-	let l:newName = resolve(a:2)
+	let l:old_name = resolve(a:1)
+	let l:new_name = resolve(a:2)
 
-	if filereadable(l:newName) && filereadable(l:oldName)
-		if l:oldName == l:newName
+	if filereadable(l:new_name) && filereadable(l:old_name)
+		if l:old_name == l:new_name
 			return
 		endif
 	endif
 
-	if (filereadable(l:newName))
-		let l:fileName = fnamemodify(l:newName, ':t:r')
-		let l:fileDirectory = fnamemodify(l:newName, ':h')
-		let l:fileCount = 1
-		while filereadable(l:newName)
-			if l:fileCount > 10
+	if (filereadable(l:new_name))
+		let l:file_name = fnamemodify(l:new_name, ':t:r')
+		let l:file_directory = fnamemodify(l:new_name, ':h')
+		let l:file_count = 1
+		while filereadable(l:new_name)
+			if l:file_count > 10
 				echoerr 'M002: Too many variations of file'
 				return
 			endif
 
-			let l:fileCount = l:fileCount + 1
+			let l:file_count = l:file_count + 1
 
-			let l:newName = resolve(printf('%s/%s_%d.md', l:fileDirectory, l:fileName, l:fileCount))
+			let l:new_name = resolve(printf('%s/%s_%d.md', l:file_directory, l:file_name, l:file_count))
 		endwhile
 	endif
 
-	if empty(l:oldName)
-		exec printf('write %s', l:newName)
+	if empty(l:old_name)
+		exec printf('write %s', l:new_name)
 	else
 		bd
-		let renameSuccess = rename(l:oldName, l:newName)
-		if renameSuccess == 0
-			exec printf('edit %s', l:newName)
+		let rename_success = rename(l:old_name, l:new_name)
+		if rename_success == 0
+			exec printf('edit %s', l:new_name)
 			doautocmd filetypedetect BufRead '%'
 		else
 			echoerr 'M003: Rename failed'
@@ -103,8 +103,8 @@ endfunction
 
 function! ajnasznote#rename_note()
 
-	let l:noramalizedName = s:fix_filename(getline(1))
-	let l:title = tolower(substitute(substitute(l:noramalizedName, '[^A-Za-z0-9_-]\+', '_', 'g'), '^[^A-Za-z0-9]', '', ''))
+	let l:noramalized_name = s:fix_filename(getline(1))
+	let l:title = tolower(substitute(substitute(l:noramalized_name, '[^A-Za-z0-9_-]\+', '_', 'g'), '^[^A-Za-z0-9]', '', ''))
 
 	if empty(l:title)
 		return
@@ -113,27 +113,27 @@ function! ajnasznote#rename_note()
 	let l:matching_tag = s:get_matching_tag(g:ajnasznote_match_tags)
 
 	if !empty(l:matching_tag)
-		let l:filePath = fnameescape(expand(printf('%s/%s', g:ajnasznote_directory, l:matching_tag)))
+		let l:file_path = fnameescape(expand(printf('%s/%s', g:ajnasznote_directory, l:matching_tag)))
 	else
-		let l:filePath = fnameescape(resolve(expand('%:h')))
+		let l:file_path = fnameescape(resolve(expand('%:h')))
 
-		if empty(l:filePath)
-			let l:filePath = expand(g:ajnasznote_directory)
+		if empty(l:file_path)
+			let l:file_path = expand(g:ajnasznote_directory)
 		endif
 	endif
 
-	if !exists(l:filePath)
-		call mkdir(l:filePath, 'p')
+	if !exists(l:file_path)
+		call mkdir(l:file_path, 'p')
 	endif
 
-	if !isdirectory(l:filePath)
+	if !isdirectory(l:file_path)
 		echoerr "M004: Not a directory"
 	endif
 
-	let l:oldName = expand('%:p')
-	let l:newName = fnamemodify(printf('%s/%s.md', l:filePath, l:title), ':p')
+	let l:old_name = expand('%:p')
+	let l:new_name = fnamemodify(printf('%s/%s.md', l:file_path, l:title), ':p')
 
-	call s:move_file(l:oldName, l:newName)
+	call s:move_file(l:old_name, l:new_name)
 endfunction
 
 function! ajnasznote#create_note()
