@@ -1,0 +1,37 @@
+ *ajnasznote.txt* Plugin for managint notes
+
+Author: Lajos Koszti <https://ajnasz.hu>
+License: MIT
+
+==============================================================================
+CONTENTS                                                 *presenting-contents*
+
+  1. Introduction..........................|ajnasznote-introduction|
+  2. Functions.............................|ajnasznote-functions|
+  2. Configuration.........................|ajnasznote-configuration|
+  2.1. Configuration.......................|ajnasznote_directory|
+
+=============================================================================
+INTRODUCTION                                         *ajnasznote-introduction*
+
+This plugin provides a few helper functions to manage notes
+
+==============================================================================
+FUNCTIONS                                               *ajnasznote-functions*
+
+*ajnasznote#create_note()*
+
+This function will just create a markdown file with the current date inside the "g:ajnasznote_directory"
+
+*ajnasznote#rename_note()*
+
+This functon will rename the note based on the it's first line
+
+For example good to call when you save a file
+  `au BufWritePost */Notes/*.md call ajnasznote#rename_note()`
+
+==============================================================================
+CONFIGURATION                                       *ajnasznote-configuration*
+
+                                                    *g:ajnasznote_directory*
+Path to the direcotry where the notes going to be stored.
