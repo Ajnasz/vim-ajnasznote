@@ -39,20 +39,18 @@ function! s:move_file(...)
 
 			let l:newName = resolve(printf('%s/%s_%d.md', l:fileDirectory, l:fileName, l:fileCount))
 		endwhile
+	endif
 
-		execute(printf('write %s', l:newName))
+	if empty(l:oldName)
+		exec printf('write %s', l:newName)
 	else
-		if empty(l:oldName)
-			exec printf('write %s', l:newName)
+		bd
+		let renameSuccess = rename(l:oldName, l:newName)
+		if renameSuccess == 0
+			exec printf('edit %s', l:newName)
+			doautocmd filetypedetect BufRead '%'
 		else
-			bd
-			let renameSuccess = rename(l:oldName, l:newName)
-			if renameSuccess == 0
-				exec printf('edit %s', l:newName)
-				doautocmd filetypedetect BufRead '%'
-			else
-				echoerr 'M003: Rename failed'
-			endif
+			echoerr 'M003: Rename failed'
 		endif
 	endif
 endfunction
