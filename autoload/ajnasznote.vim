@@ -1,5 +1,6 @@
-function! s:fix_filename(...)
-	let l:name = a:1
+scriptencoding utf-8
+function! s:fix_filename(name)
+	let l:name = a:name
 
 	let l:chars = [
 		\ ['á', 'a'],
@@ -29,6 +30,9 @@ function! s:fix_filename(...)
 	return l:name
 endfunction
 
+function! s:get_notes_new_name()
+endfunction
+
 function! s:move_note(...)
 	if a:0 != 2
 		echoerr 'M001: Expected exactly two parameters'
@@ -43,10 +47,11 @@ function! s:move_note(...)
 		endif
 	endif
 
-	if (filereadable(l:new_name))
+	if filereadable(l:new_name)
 		let l:file_name = fnamemodify(l:new_name, ':t:r')
 		let l:file_directory = fnamemodify(l:new_name, ':h')
 		let l:file_count = 1
+
 		while filereadable(l:new_name)
 			if l:file_count > 10
 				echoerr 'M002: Too many variations of file'
@@ -56,6 +61,10 @@ function! s:move_note(...)
 			let l:file_count = l:file_count + 1
 
 			let l:new_name = resolve(printf('%s/%s_%d.md', l:file_directory, l:file_name, l:file_count))
+
+			if l:new_name == l:old_name
+				return
+			endif
 		endwhile
 	endif
 
@@ -126,7 +135,7 @@ function! ajnasznote#rename_note()
 	endif
 
 	if !isdirectory(l:file_path)
-		echoerr "M004: Not a directory"
+		echoerr 'M004: Not a directory'
 	endif
 
 	let l:old_name = expand('%:p')

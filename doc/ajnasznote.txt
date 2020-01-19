@@ -10,6 +10,10 @@ CONTENTS                                                 *presenting-contents*
   2. Configuration.........................|ajnasznote-configuration|
   3. Commands..............................|ajnasznote-commands|
   4. Functions.............................|ajnasznote-functions|
+  5. Errors................................|ajnasznote-errors|
+    5.1 M001...............................|ajnasznote-error-m001|
+    5.2 M002...............................|ajnasznote-error-m002|
+    5.3 M003...............................|ajnasznote-error-m003|
 
 =============================================================================
 INTRODUCTION                                         *ajnasznote-introduction*
@@ -62,3 +66,19 @@ This functon will rename the note based on the it's first line
 
 For example good to call when you save a file
   `au BufWritePost */Notes/*.md call ajnasznote#rename_note()`
+
+=============================================================================
+ERRORS                                               *ajnasznote-errors*
+
+M001: Expected exactly two parameters                *ajnasznote-error-m001*
+
+Internal funciton *ajnasznote#move_note()* function must be called exactly with two parameters: the old file name and the new file name.
+
+M002: Too many variations of file                    *ajnasznote-error-m002*
+
+The plugin tries to generate file names for the same title with a suffix of a
+number. If that number would be too big (>10) then this error is displayed.
+
+M001: Rename failed                                  *ajnasznote-error-m002*
+
+An unkown error occured when `rename()` function called.
