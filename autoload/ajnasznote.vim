@@ -29,7 +29,7 @@ function! s:fix_filename(...)
 	return l:name
 endfunction
 
-function! s:move_file(...)
+function! s:move_note(...)
 	if a:0 != 2
 		echoerr 'M001: Expected exactly two parameters'
 	endif
@@ -102,7 +102,6 @@ function! s:get_matching_tag(tags)
 endfunction
 
 function! ajnasznote#rename_note()
-
 	let l:noramalized_name = s:fix_filename(getline(1))
 	let l:title = tolower(substitute(substitute(l:noramalized_name, '[^A-Za-z0-9_-]\+', '_', 'g'), '^[^A-Za-z0-9]', '', ''))
 
@@ -133,7 +132,7 @@ function! ajnasznote#rename_note()
 	let l:old_name = expand('%:p')
 	let l:new_name = fnamemodify(printf('%s/%s.md', l:file_path, l:title), ':p')
 
-	call s:move_file(l:old_name, l:new_name)
+	call s:move_note(l:old_name, l:new_name)
 endfunction
 
 function! ajnasznote#create_note()

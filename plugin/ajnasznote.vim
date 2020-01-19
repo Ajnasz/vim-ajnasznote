@@ -11,3 +11,14 @@ endif
 if !exists('g:ajnasznote_match_tags')
 	let g:ajnasznote_match_tags = {}
 endif
+
+function! NoteCreate()
+	call ajnasznote#create_note()
+endfunction
+
+function! NoteExplore()
+	exec printf('Lexplore %s', g:ajnasznote_directory)
+endfunction
+
+command NoteCreate call NoteCreate()
+command NoteExlore call NoteExplore()
