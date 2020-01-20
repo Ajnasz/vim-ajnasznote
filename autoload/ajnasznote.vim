@@ -75,7 +75,7 @@ function! s:move_note(...)
 		let rename_success = rename(l:old_name, l:new_name)
 		if rename_success == 0
 			exec printf('edit %s', l:new_name)
-			doautocmd filetypedetect BufRead '%'
+			filetype detect
 		else
 			echoerr 'M003: Rename failed'
 		endif
