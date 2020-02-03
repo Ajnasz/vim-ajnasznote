@@ -91,13 +91,13 @@ function! s:buffer_has_tag(tag)
 		let l:line = getline(l:x)
 
 		if (l:line =~ a:tag)
-			return 1
+			return v:true
 		endif
 
 		let l:x = l:x + 1
 	endwhile
 
-	return 0
+	return v:false
 endfunction
 
 function! s:get_matching_tag(tags)
