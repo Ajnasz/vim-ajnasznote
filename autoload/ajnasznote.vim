@@ -73,6 +73,7 @@ function! s:move_note(...)
 	else
 		bd
 		let rename_success = rename(l:old_name, l:new_name)
+
 		if rename_success == 0
 			exec printf('edit %s', l:new_name)
 			filetype detect
@@ -82,28 +83,48 @@ function! s:move_note(...)
 	endif
 endfunction
 
-function! s:buffer_has_tag(tag)
-	let l:x = 1
+function! s:buffer_get_tags()
+	let l:tags = split(getline(3), '\s\+')
 
-	let l:match = '\<' . a:tag . '\>'
+	return l:tags
+endfunction
 
-	while l:x < 5
-		let l:line = getline(l:x)
-
-		if (l:line =~ a:tag)
+function! s:buffer_has_tag(tags, tag)
+	for l:tag in a:tags
+		if a:tag == l:tag
 			return v:true
 		endif
-
-		let l:x = l:x + 1
-	endwhile
+	endfor
 
 	return v:false
 endfunction
 
 function! s:get_matching_tag(tags)
-	for match_tag in a:tags
-		if s:buffer_has_tag(match_tag['pattern'])
-			return match_tag['path']
+	let l:buffer_tags = s:buffer_get_tags()
+
+	for l:match_tag in a:tags
+		let l:pattern = l:match_tag['pattern']
+		let l:has_all_tags = v:true
+		let l:tags = []
+		let l:pattern_type = type(l:pattern)
+
+		if l:pattern_type == v:t_list
+			let l:tags = l:pattern
+		elseif l:pattern_type == v:t_string
+			let l:tags = [l:pattern]
+		else
+			echoerr 'M005: Invalid pattern'
+		endif
+
+		for l:tag in l:tags
+			if !s:buffer_has_tag(l:buffer_tags, l:tag)
+				let l:has_all_tags = v:false
+				break
+			endif
+		endfor
+
+		if l:has_all_tags
+			return l:match_tag['path']
 		endif
 	endfor
 

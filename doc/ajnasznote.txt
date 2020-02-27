@@ -14,6 +14,8 @@ CONTENTS                                                 *presenting-contents*
     5.1 M001...............................|ajnasznote-error-m001|
     5.2 M002...............................|ajnasznote-error-m002|
     5.3 M003...............................|ajnasznote-error-m003|
+    5.3 M004...............................|ajnasznote-error-m004|
+    5.3 M005...............................|ajnasznote-error-m005|
 
 =============================================================================
 INTRODUCTION                                         *ajnasznote-introduction*
@@ -33,6 +35,7 @@ A dictionary where you can define if a note should be moved into subdirectory
 in case the first 5 lines are matching to the key of the dict.
 >
   let g:ajnasznote_match_tags = [
+	\ { 'pattern': ['@personal', '@archive'], 'path': 'personal/archive' },
 	\ { 'pattern': '@important', 'path': 'important' },
 	\ { 'pattern': '@personal', 'path': 'personal' }`
 	\]
@@ -79,6 +82,15 @@ M002: Too many variations of file                    *ajnasznote-error-m002*
 The plugin tries to generate file names for the same title with a suffix of a
 number. If that number would be too big (>10) then this error is displayed.
 
-M001: Rename failed                                  *ajnasznote-error-m002*
+M003: Rename failed                                  *ajnasznote-error-m003*
 
 An unkown error occured when `rename()` function called.
+
+M004: Not a directory                                 *ajnasznote-error-m004*
+
+Can't move the file to a new path, because it's parent folder because it's not a directory.
+
+M005: Invalid pattern                                 *ajnasznote-error-m004*
+
+Can't process |g:ajnasznote_match_tags| because a pattern is not in a correct
+format. It must be a list of tags or a string.
