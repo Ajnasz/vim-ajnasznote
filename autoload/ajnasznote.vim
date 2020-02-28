@@ -108,20 +108,20 @@ function! s:get_matching_tag(tags)
 		let l:tags = []
 		let l:pattern_type = type(l:pattern)
 
-		if l:pattern_type == v:t_list
+		if l:pattern_type == v:t_string
+			let l:has_all_tags = s:buffer_has_tag(l:buffer_tags, l:pattern)
+		elseif l:pattern_type == v:t_list
 			let l:tags = l:pattern
-		elseif l:pattern_type == v:t_string
-			let l:tags = [l:pattern]
+
+			for l:tag in l:tags
+				if !s:buffer_has_tag(l:buffer_tags, l:tag)
+					let l:has_all_tags = v:false
+					break
+				endif
+			endfor
 		else
 			echoerr 'M005: Invalid pattern'
 		endif
-
-		for l:tag in l:tags
-			if !s:buffer_has_tag(l:buffer_tags, l:tag)
-				let l:has_all_tags = v:false
-				break
-			endif
-		endfor
 
 		if l:has_all_tags
 			return l:match_tag['path']
