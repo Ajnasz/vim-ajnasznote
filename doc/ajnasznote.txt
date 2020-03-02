@@ -11,11 +11,11 @@ CONTENTS                                                 *presenting-contents*
   3. Commands..............................|ajnasznote-commands|
   4. Functions.............................|ajnasznote-functions|
   5. Errors................................|ajnasznote-errors|
-    5.1 M001...............................|ajnasznote-error-m001|
+    5.1 M006...............................|ajnasznote-error-m006|
     5.2 M002...............................|ajnasznote-error-m002|
     5.3 M003...............................|ajnasznote-error-m003|
-    5.3 M004...............................|ajnasznote-error-m004|
-    5.3 M005...............................|ajnasznote-error-m005|
+    5.4 M004...............................|ajnasznote-error-m004|
+    5.5 M005...............................|ajnasznote-error-m005|
 
 =============================================================================
 INTRODUCTION                                         *ajnasznote-introduction*
@@ -73,9 +73,9 @@ For example good to call when you save a file
 =============================================================================
 ERRORS                                               *ajnasznote-errors*
 
-M001: Expected exactly two parameters                *ajnasznote-error-m001*
+M006: note name cannot be empty                      *ajnasznote-error-m006*
 
-Internal funciton *ajnasznote#move_note()* function must be called exactly with two parameters: the old file name and the new file name.
+In the internal funciton *ajnasznote#move_note()* function expects second parameter to not be empty as this is the destination name of the file.
 
 M002: Too many variations of file                    *ajnasznote-error-m002*
 

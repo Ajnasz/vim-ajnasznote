@@ -30,49 +30,69 @@ function! s:fix_filename(name)
 	return l:name
 endfunction
 
-function! s:get_notes_new_name()
-endfunction
-
-function! s:move_note(...)
-	if a:0 != 2
-		echoerr 'M001: Expected exactly two parameters'
+function! s:generate_new_name(old_name, new_name, count)
+	if a:old_name == a:new_name
+		return a:new_name
 	endif
 
-	let l:old_name = resolve(a:1)
-	let l:new_name = resolve(a:2)
+	if !filereadable(a:new_name)
+		return a:new_name
+	endif
 
-	if filereadable(l:new_name) && filereadable(l:old_name)
-		if l:old_name == l:new_name
+	if a:count > 10
+		echoerr 'M002: Too many variations of file'
+		return ''
+	endif
+
+	let l:file_name = fnamemodify(a:new_name, ':t:r')
+	let l:file_directory = fnamemodify(a:new_name, ':h')
+
+	let l:new_name = resolve(printf('%s/%s_%d.md', l:file_directory, l:file_name, a:count))
+
+	return s:generate_new_name(a:old_name, l:new_name, a:count + 1)
+endfunction
+
+function! s:move_note(old_name, new_name)
+	if empty(a:new_name)
+		echoerr 'M006: Note name cannot be empty'
+	endif
+
+	let l:new_name = resolve(a:new_name)
+
+	if filereadable(l:new_name) && filereadable(a:old_name)
+		if a:old_name == l:new_name
 			return
 		endif
 	endif
 
-	if filereadable(l:new_name)
-		let l:file_name = fnamemodify(l:new_name, ':t:r')
-		let l:file_directory = fnamemodify(l:new_name, ':h')
-		let l:file_count = 1
+	let l:new_name = s:generate_new_name(a:old_name, l:new_name, 1)
 
-		while filereadable(l:new_name)
-			if l:file_count > 10
-				echoerr 'M002: Too many variations of file'
-				return
-			endif
+	" if filereadable(l:new_name)
+	" 	let l:file_name = fnamemodify(l:new_name, ':t:r')
+	" 	let l:file_directory = fnamemodify(l:new_name, ':h')
+	" 	let l:file_count = 1
 
-			let l:file_count = l:file_count + 1
+	" 	while filereadable(l:new_name)
+	" 		if l:file_count > 10
+	" 			echoerr 'M002: Too many variations of file'
+	" 			return
+	" 		endif
 
-			let l:new_name = resolve(printf('%s/%s_%d.md', l:file_directory, l:file_name, l:file_count))
+	" 		let l:file_count = l:file_count + 1
 
-			if l:new_name == l:old_name
-				return
-			endif
-		endwhile
-	endif
+	" 		let l:new_name = resolve(printf('%s/%s_%d.md', l:file_directory, l:file_name, l:file_count))
 
-	if empty(l:old_name)
+	" 		if l:new_name == a:old_name
+	" 			return
+	" 		endif
+	" 	endwhile
+	" endif
+
+	if empty(a:old_name)
 		exec printf('write %s', l:new_name)
 	else
 		bd
-		let rename_success = rename(l:old_name, l:new_name)
+		let rename_success = rename(a:old_name, l:new_name)
 
 		if rename_success == 0
 			exec printf('edit %s', l:new_name)
@@ -141,14 +161,14 @@ function! ajnasznote#rename_note()
 
 	let l:matching_tag = s:get_matching_tag(g:ajnasznote_match_tags)
 
-	if !empty(l:matching_tag)
-		let l:file_path = fnameescape(expand(printf('%s/%s', g:ajnasznote_directory, l:matching_tag)))
-	else
+	if empty(l:matching_tag)
 		let l:file_path = fnameescape(resolve(expand('%:h')))
 
 		if empty(l:file_path)
 			let l:file_path = expand(g:ajnasznote_directory)
 		endif
+	else
+		let l:file_path = fnameescape(expand(printf('%s/%s', g:ajnasznote_directory, l:matching_tag)))
 	endif
 
 	if !exists(l:file_path)
