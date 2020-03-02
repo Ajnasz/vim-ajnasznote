@@ -30,13 +30,14 @@ function! s:fix_filename(name)
 	return l:name
 endfunction
 
-function! s:generate_new_name(old_name, new_name, count)
-	if a:old_name == a:new_name
-		return a:new_name
-	endif
+function! s:generate_new_alt_note_name(old_name, new_name, count)
+	let l:file_name = fnamemodify(a:new_name, ':t:r')
+	let l:file_directory = fnamemodify(a:new_name, ':h')
 
-	if !filereadable(a:new_name)
-		return a:new_name
+	let l:formatted_new_name = resolve(printf('%s/%s_%d.md', l:file_directory, l:file_name, a:count))
+
+	if l:formatted_new_name == a:new_name || !filereadable(l:formatted_new_name)
+		return l:formatted_new_name
 	endif
 
 	if a:count > 10
@@ -44,12 +45,16 @@ function! s:generate_new_name(old_name, new_name, count)
 		return ''
 	endif
 
-	let l:file_name = fnamemodify(a:new_name, ':t:r')
-	let l:file_directory = fnamemodify(a:new_name, ':h')
+	return s:generate_new_alt_note_name(a:old_name, a:new_name, a:count + 1)
+endfunction
 
-	let l:new_name = resolve(printf('%s/%s_%d.md', l:file_directory, l:file_name, a:count))
+function! s:generate_new_name(old_name, new_name)
+	" New file
+	if !filereadable(a:new_name)
+		return a:new_name
+	endif
 
-	return s:generate_new_name(a:old_name, l:new_name, a:count + 1)
+	return s:generate_new_alt_note_name(a:old_name, a:new_name, 1)
 endfunction
 
 function! s:move_note(old_name, new_name)
@@ -57,36 +62,16 @@ function! s:move_note(old_name, new_name)
 		echoerr 'M006: Note name cannot be empty'
 	endif
 
+	let l:old_name = resolve(a:old_name)
 	let l:new_name = resolve(a:new_name)
-
-	if filereadable(l:new_name) && filereadable(a:old_name)
-		if a:old_name == l:new_name
-			return
-		endif
+	" Same file
+	if l:old_name == l:new_name
+		return
 	endif
 
-	let l:new_name = s:generate_new_name(a:old_name, l:new_name, 1)
+	let l:new_name = s:generate_new_name(l:old_name, l:new_name)
+	" let l:new_name = luaeval('require("ajnasznote").generate_new_note_name(_A[1], _A[2])', [l:old_name, resolve(a:new_name)])
 
-	" if filereadable(l:new_name)
-	" 	let l:file_name = fnamemodify(l:new_name, ':t:r')
-	" 	let l:file_directory = fnamemodify(l:new_name, ':h')
-	" 	let l:file_count = 1
-
-	" 	while filereadable(l:new_name)
-	" 		if l:file_count > 10
-	" 			echoerr 'M002: Too many variations of file'
-	" 			return
-	" 		endif
-
-	" 		let l:file_count = l:file_count + 1
-
-	" 		let l:new_name = resolve(printf('%s/%s_%d.md', l:file_directory, l:file_name, l:file_count))
-
-	" 		if l:new_name == a:old_name
-	" 			return
-	" 		endif
-	" 	endwhile
-	" endif
 
 	if empty(a:old_name)
 		exec printf('write %s', l:new_name)
