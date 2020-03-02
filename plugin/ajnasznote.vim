@@ -21,4 +21,4 @@ function! NoteExplore()
 endfunction
 
 command NoteCreate call NoteCreate()
-command NoteExlore call NoteExplore()
+command NoteExplore call NoteExplore()
