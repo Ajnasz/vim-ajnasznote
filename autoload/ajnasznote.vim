@@ -69,8 +69,8 @@ function! s:move_note(old_name, new_name)
 		return
 	endif
 
-	let l:new_name = s:generate_new_name(l:old_name, l:new_name)
-	" let l:new_name = luaeval('require("ajnasznote").generate_new_note_name(_A[1], _A[2])', [l:old_name, resolve(a:new_name)])
+	" let l:new_name = s:generate_new_name(l:old_name, l:new_name)
+	let l:new_name = luaeval('require("ajnasznote").generate_new_note_name(_A[1], _A[2])', [l:old_name, l:new_name])
 
 
 	if empty(a:old_name)
@@ -89,19 +89,11 @@ function! s:move_note(old_name, new_name)
 endfunction
 
 function! s:buffer_get_tags()
-	let l:tags = split(getline(3), '\s\+')
-
-	return l:tags
+	return luaeval('require("ajnasznote").get_tags()')
 endfunction
 
 function! s:buffer_has_tag(tags, tag)
-	for l:tag in a:tags
-		if a:tag == l:tag
-			return v:true
-		endif
-	endfor
-
-	return v:false
+	return luaeval('require("ajnasznote").has_tag(unpack(_A))', [a:tags, a:tag])
 endfunction
 
 function! s:get_matching_tag(tags)
