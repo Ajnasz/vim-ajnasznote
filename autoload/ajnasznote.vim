@@ -14,19 +14,11 @@ function! s:move_note(old_name, new_name)
 
 	let l:new_name = luaeval('require("ajnasznote").generate_new_note_name(_A[1], _A[2])', [l:old_name, l:new_name])
 
+	exec printf('keepalt saveas %s', l:new_name)
 
-	if empty(a:old_name)
-		exec printf('write %s', l:new_name)
-	else
-		bd
-		let rename_success = rename(a:old_name, l:new_name)
-
-		if rename_success == 0
-			exec printf('edit %s', l:new_name)
-			filetype detect
-		else
-			echoerr 'M003: Rename failed'
-		endif
+	if l:old_name !=# expand('%:p')
+		call delete(l:old_name)
+		execute printf('bwipe %s', l:old_name)
 	endif
 endfunction
 
@@ -35,8 +27,7 @@ function! s:get_matching_tag(tags)
 endfunction
 
 function! ajnasznote#rename_note()
-	let l:noramalized_name = luaeval('require("ajnasznote").fix_filename(_A)', getline(1))
-	let l:title = tolower(substitute(substitute(l:noramalized_name, '[^A-Za-z0-9_-]\+', '_', 'g'), '^[^A-Za-z0-9]', '', ''))
+	let l:title = luaeval('require("ajnasznote").fix_filename(_A)', getline(1))
 
 	if empty(l:title)
 		return

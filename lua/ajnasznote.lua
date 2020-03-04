@@ -113,6 +113,7 @@ function fix_filename(name)
 		new_name = string.gsub(new_name, achar[1], achar[2])
 	end
 
+	new_name = string.gsub(string.gsub(string.lower(new_name), '^[^a-z0-9]+', ''), '[^a-z0-9]+', '_')
 	return new_name
 end
 
