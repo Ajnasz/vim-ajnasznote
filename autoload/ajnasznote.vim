@@ -1,61 +1,4 @@
 scriptencoding utf-8
-function! s:fix_filename(name)
-	let l:name = a:name
-
-	let l:chars = [
-		\ ['á', 'a'],
-		\ ['é', 'e'],
-		\ ['í', 'i'],
-		\ ['ó', 'o'],
-		\ ['ö', 'o'],
-		\ ['ő', 'o'],
-		\ ['ú', 'u'],
-		\ ['ü', 'u'],
-		\ ['ű', 'u'],
-		\ ['Á', 'A'],
-		\ ['É', 'E'],
-		\ ['Í', 'I'],
-		\ ['Ó', 'O'],
-		\ ['Ö', 'O'],
-		\ ['Ő', 'O'],
-		\ ['Ú', 'U'],
-		\ ['Ü', 'U'],
-		\ ['Ű', 'U'],
-		\]
-
-	for achar in l:chars
-		let l:name = substitute(l:name, achar[0], achar[1], 'g')
-	endfor
-
-	return l:name
-endfunction
-
-function! s:generate_new_alt_note_name(old_name, new_name, count)
-	let l:file_name = fnamemodify(a:new_name, ':t:r')
-	let l:file_directory = fnamemodify(a:new_name, ':h')
-
-	let l:formatted_new_name = resolve(printf('%s/%s_%d.md', l:file_directory, l:file_name, a:count))
-
-	if l:formatted_new_name == a:new_name || !filereadable(l:formatted_new_name)
-		return l:formatted_new_name
-	endif
-
-	if a:count > 10
-		echoerr 'M002: Too many variations of file'
-		return ''
-	endif
-
-	return s:generate_new_alt_note_name(a:old_name, a:new_name, a:count + 1)
-endfunction
-
-function! s:generate_new_name(old_name, new_name)
-	" New file
-	if !filereadable(a:new_name)
-		return a:new_name
-	endif
-
-	return s:generate_new_alt_note_name(a:old_name, a:new_name, 1)
-endfunction
 
 function! s:move_note(old_name, new_name)
 	if empty(a:new_name)
@@ -69,7 +12,6 @@ function! s:move_note(old_name, new_name)
 		return
 	endif
 
-	" let l:new_name = s:generate_new_name(l:old_name, l:new_name)
 	let l:new_name = luaeval('require("ajnasznote").generate_new_note_name(_A[1], _A[2])', [l:old_name, l:new_name])
 
 
@@ -88,55 +30,19 @@ function! s:move_note(old_name, new_name)
 	endif
 endfunction
 
-function! s:buffer_get_tags()
-	return luaeval('require("ajnasznote").get_tags()')
-endfunction
-
-function! s:buffer_has_tag(tags, tag)
-	return luaeval('require("ajnasznote").has_tag(unpack(_A))', [a:tags, a:tag])
-endfunction
-
 function! s:get_matching_tag(tags)
-	let l:buffer_tags = s:buffer_get_tags()
-
-	for l:match_tag in a:tags
-		let l:pattern = l:match_tag['pattern']
-		let l:has_all_tags = v:true
-		let l:tags = []
-		let l:pattern_type = type(l:pattern)
-
-		if l:pattern_type == v:t_string
-			let l:has_all_tags = s:buffer_has_tag(l:buffer_tags, l:pattern)
-		elseif l:pattern_type == v:t_list
-			let l:tags = l:pattern
-
-			for l:tag in l:tags
-				if !s:buffer_has_tag(l:buffer_tags, l:tag)
-					let l:has_all_tags = v:false
-					break
-				endif
-			endfor
-		else
-			echoerr 'M005: Invalid pattern'
-		endif
-
-		if l:has_all_tags
-			return l:match_tag['path']
-		endif
-	endfor
-
-	return ''
+	return luaeval('require("ajnasznote").get_matching_tag(unpack(_A))', [a:tags])
 endfunction
 
 function! ajnasznote#rename_note()
-	let l:noramalized_name = s:fix_filename(getline(1))
+	let l:noramalized_name = luaeval('require("ajnasznote").fix_filename(_A)', getline(1))
 	let l:title = tolower(substitute(substitute(l:noramalized_name, '[^A-Za-z0-9_-]\+', '_', 'g'), '^[^A-Za-z0-9]', '', ''))
 
 	if empty(l:title)
 		return
 	endif
 
-	let l:matching_tag = s:get_matching_tag(g:ajnasznote_match_tags)
+	let l:matching_tag = luaeval('require("ajnasznote").get_matching_tag(unpack(_A))', [g:ajnasznote_match_tags])
 
 	if empty(l:matching_tag)
 		let l:file_path = fnameescape(resolve(expand('%:h')))
