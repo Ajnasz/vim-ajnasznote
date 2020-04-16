@@ -90,7 +90,7 @@ M004: Not a directory                                 *ajnasznote-error-m004*
 
 Can't move the file to a new path, because it's parent folder because it's not a directory.
 
-M005: Invalid pattern                                 *ajnasznote-error-m004*
+M005: Invalid pattern                                 *ajnasznote-error-m005*
 
 Can't process |g:ajnasznote_match_tags| because a pattern is not in a correct
 format. It must be a list of tags or a string.
