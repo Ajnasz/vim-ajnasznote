@@ -10,7 +10,7 @@ set conceallevel=2 wrap lbr tw=80 wrapmargin=0 showbreak=\\n>
 
 exec printf('au BufWritePost %s/*.md call ajnasznote#rename_note()', resolve(fnamemodify(g:ajnasznote_directory, ':p:h')))
 
-call AjnaszExecCommand()
+call ajnasznote#exec_command()
 
 let &cpoptions = s:cpo_save
 unlet s:cpo_save
