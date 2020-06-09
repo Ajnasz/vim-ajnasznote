@@ -24,9 +24,9 @@ let g:ajnasznote_match_tags = [
 ```
 
 With the configuration above, if you add a tag called '@important' the note
-will be moved into the "important" direcotry. If you add the tag '@personal'
-the note will be moved into the "personal" subdirectory. If you add both of
-the tags, the note will be moved into the one which matches first.
+will be moved into the "important" direcotry. If you add the tag '@personal' to
+the 3th line the note will be moved into the "personal" subdirectory. If you
+add both of the tags, the note will be moved into the one which matches first.
 
 ## Commands
 
@@ -37,3 +37,9 @@ Creates a new file (calls the `ajnasznote#create_note` command)
 ### :NoteExplore
 
 Opens the `g:ajnasznote_directory` with `:Lexplore` command
+
+## Meta configuration
+
+Add `+md_loadsyntax:sql:sh` to the 3. line to enable syntax highlihgt inside
+markdown codeblocks. In the example it will be enabled for SQL and Shell codes.
+Separate syntax names by a colon

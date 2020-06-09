@@ -41,9 +41,9 @@ in case the first 5 lines are matching to the key of the dict.
 	\]
 <
 With the configuration above, if you add a tag called '@important' the note
-will be moved into the "important" direcotry. If you add the tag '@personal'
-the note will be moved into the "personal" subdirectory. If you add both of
-the tags, the note will be moved into the one which matches first.
+will be moved into the "important" direcotry. If you add the tag '@personal' to
+the 3. line the note will be moved into the "personal" subdirectory. If you add
+both of the tags, the note will be moved into the one which matches first.
 
 =============================================================================
 COMMANDS                                                *ajnasznote-commands*
@@ -94,3 +94,12 @@ M005: Invalid pattern                                 *ajnasznote-error-m005*
 
 Can't process |g:ajnasznote_match_tags| because a pattern is not in a correct
 format. It must be a list of tags or a string.
+
+=============================================================================
+Document configuration                                  *ajnasznote-doc-config*
+
+*+md_loadsyntax*                                          *ajnasznote-md_loadsyntax*
+
+Add *+md_loadsyntax:sql:sh* to the 3. line to enable syntax highlihgt inside
+markdown codeblocks. In the example it will be enabled for SQL and Shell codes.
+Syntax names must be separated by a colons.
