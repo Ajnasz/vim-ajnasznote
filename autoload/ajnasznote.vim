@@ -89,9 +89,33 @@ function! s:move_note(old_name, new_name)
 endfunction
 
 function! s:buffer_get_tags()
-	let l:tags = split(getline(3), '\s\+')
+	let l:tags = []
+	let l:words = split(getline(3), '\s\+')
+
+	for l:word in l:words
+		if l:word[0] ==# '@'
+			call add(l:tags, l:word)
+		endif
+	endfor
 
 	return l:tags
+endfunction
+
+function! s:buffer_get_commands()
+	let l:commands = []
+	let l:words = split(getline(3), '\s\+')
+
+	for l:word in l:words
+		if l:word[0] ==# '+'
+			let l:cmd_parts = split(word, ':')
+			let l:cmd = {}
+			let l:cmd['cmd'] = l:cmd_parts[0]
+			let l:cmd['args'] = l:cmd_parts[1:]
+			call add(l:commands, l:cmd)
+		endif
+	endfor
+
+	return l:commands
 endfunction
 
 function! s:buffer_has_tag(tags, tag)
@@ -173,4 +197,15 @@ endfunction
 function! ajnasznote#create_note()
 	let fname = strftime('%Y-%m-%d_%H%M%s')
 	exec printf('edit %s/%s.md', expand(g:ajnasznote_directory), fname)
+endfunction
+
+function! ajnasznote#exec_command()
+	let l:commands = s:buffer_get_commands()
+	echo l:commands
+
+	for l:custom_command in l:commands
+		if l:custom_command['cmd'] ==# '+md_loadsyntax'
+			let g:markdown_fenced_languages += l:custom_command['args']
+		endif
+	endfor
 endfunction

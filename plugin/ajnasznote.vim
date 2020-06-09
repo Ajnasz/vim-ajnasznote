@@ -20,5 +20,9 @@ function! NoteExplore()
 	exec printf('Lexplore %s', g:ajnasznote_directory)
 endfunction
 
+function! AjnaszExecCommand()
+	call ajnasznote#exec_command()
+endfunction
+
 command NoteCreate call NoteCreate()
 command NoteExplore call NoteExplore()
