@@ -199,7 +199,7 @@ function! ajnasznote#create_note()
 	exec printf('edit %s/%s.md', expand(g:ajnasznote_directory), fname)
 endfunction
 
-function! ajnasznote#exec_command()
+function! ajnasznote#exec_doc_commands()
 	let l:commands = s:buffer_get_commands()
 	echo l:commands
 
