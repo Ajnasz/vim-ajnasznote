@@ -201,7 +201,6 @@ endfunction
 
 function! ajnasznote#exec_doc_commands()
 	let l:commands = s:buffer_get_commands()
-	echo l:commands
 
 	for l:custom_command in l:commands
 		if l:custom_command['cmd'] ==# '+md_loadsyntax'
