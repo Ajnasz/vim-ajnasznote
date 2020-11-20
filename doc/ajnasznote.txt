@@ -1,4 +1,4 @@
- *ajnasznote.txt* Plugin for managint notes
+ *ajnasznote.txt* Plugin for managing notes
 
 Author: Lajos Koszti <https://ajnasz.hu>
 License: MIT
