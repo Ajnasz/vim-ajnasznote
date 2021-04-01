@@ -70,8 +70,6 @@ function! s:move_note(old_name, new_name)
 	endif
 
 	let l:new_name = s:generate_new_name(l:old_name, l:new_name)
-	" let l:new_name = luaeval('require("ajnasznote").generate_new_note_name(_A[1], _A[2])', [l:old_name, resolve(a:new_name)])
-
 
 	if empty(a:old_name)
 		exec printf('write %s', l:new_name)
