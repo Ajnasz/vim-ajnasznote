@@ -59,16 +59,21 @@ Opens the |g:ajnasznote_directory| with `:Lexplore` command
 =============================================================================
 FUNCTIONS                                               *ajnasznote-functions*
 
-*ajnasznote#create_note()*
+ajnasznote#create_note()                            *ajnasznote#create_note()*
+Creates a markdown file. The name of the file will be the current date, and it
+will be placed inside inside the |g:ajnasznote_directory|
 
-This function will just create a markdown file with the current date inside the "g:ajnasznote_directory"
+ajnasznote#rename_note()                            *ajnasznote#rename_note()*
 
-*ajnasznote#rename_note()*
-
-This functon will rename the note based on the it's first line
+Renames the note based on the it's first line
 
 For example good to call when you save a file
   `au BufWritePost */Notes/*.md call ajnasznote#rename_note()`
+
+ajnasznote#add_match_tags({tags})                *ajnasznote#add_match_tags()*
+
+A function to extend the |g:ajnasznote_match_tags| list with new tags. Creates
+the variable if not exists yet.
 
 =============================================================================
 ERRORS                                               *ajnasznote-errors*

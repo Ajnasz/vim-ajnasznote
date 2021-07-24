@@ -158,6 +158,14 @@ function! s:get_matching_tag(tags)
 	return ''
 endfunction
 
+function! ajnasznote#add_match_tags(tags)
+	if !exists('g:ajnasznote_match_tags')
+		let g:ajnasznote_match_tags = []
+	endif
+
+	let g:ajnasznote_match_tags = g:ajnasznote_match_tags + a:tags
+endfunction
+
 function! ajnasznote#rename_note()
 	let l:noramalized_name = s:fix_filename(getline(1))
 	let l:title = tolower(substitute(substitute(l:noramalized_name, '[^A-Za-z0-9_-]\+', '_', 'g'), '^[^A-Za-z0-9]', '', ''))
