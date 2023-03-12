@@ -1,133 +1,136 @@
 scriptencoding utf-8
-function! s:fix_filename(name)
-	let l:name = a:name
 
-	let l:chars = [
-		\ ['á', 'a'],
-		\ ['é', 'e'],
-		\ ['í', 'i'],
-		\ ['ó', 'o'],
-		\ ['ö', 'o'],
-		\ ['ő', 'o'],
-		\ ['ú', 'u'],
-		\ ['ü', 'u'],
-		\ ['ű', 'u'],
-		\ ['Á', 'A'],
-		\ ['É', 'E'],
-		\ ['Í', 'I'],
-		\ ['Ó', 'O'],
-		\ ['Ö', 'O'],
-		\ ['Ő', 'O'],
-		\ ['Ú', 'U'],
-		\ ['Ü', 'U'],
-		\ ['Ű', 'U'],
-		\]
+" function! s:fix_filename(name)
+" 	let l:name = a:name
 
-	for achar in l:chars
-		let l:name = substitute(l:name, achar[0], achar[1], 'g')
-	endfor
+" 	let l:chars = [
+" 		\ ['á', 'a'],
+" 		\ ['é', 'e'],
+" 		\ ['í', 'i'],
+" 		\ ['ó', 'o'],
+" 		\ ['ö', 'o'],
+" 		\ ['ő', 'o'],
+" 		\ ['ú', 'u'],
+" 		\ ['ü', 'u'],
+" 		\ ['ű', 'u'],
+" 		\ ['Á', 'A'],
+" 		\ ['É', 'E'],
+" 		\ ['Í', 'I'],
+" 		\ ['Ó', 'O'],
+" 		\ ['Ö', 'O'],
+" 		\ ['Ő', 'O'],
+" 		\ ['Ú', 'U'],
+" 		\ ['Ü', 'U'],
+" 		\ ['Ű', 'U'],
+" 		\]
 
-	return l:name
-endfunction
+" 	for achar in l:chars
+" 		let l:name = substitute(l:name, achar[0], achar[1], 'g')
+" 	endfor
 
-function! s:generate_new_alt_note_name(old_name, new_name, count)
-	let l:file_name = fnamemodify(a:new_name, ':t:r')
-	let l:file_directory = fnamemodify(a:new_name, ':h')
+" 	return l:name
+" endfunction
 
-	let l:formatted_new_name = resolve(printf('%s/%s_%d.md', l:file_directory, l:file_name, a:count))
+" function! s:generate_new_alt_note_name(old_name, new_name, count)
+" 	let l:file_name = fnamemodify(a:new_name, ':t:r')
+" 	let l:file_directory = fnamemodify(a:new_name, ':h')
 
-	if l:formatted_new_name == a:new_name || !filereadable(l:formatted_new_name)
-		return l:formatted_new_name
-	endif
+" 	let l:formatted_new_name = resolve(printf('%s/%s_%d.md', l:file_directory, l:file_name, a:count))
 
-	if a:count > 10
-		echoerr 'M002: Too many variations of file'
-		return ''
-	endif
+" 	if l:formatted_new_name == a:new_name || !filereadable(l:formatted_new_name)
+" 		return l:formatted_new_name
+" 	endif
 
-	return s:generate_new_alt_note_name(a:old_name, a:new_name, a:count + 1)
-endfunction
+" 	if a:count > 10
+" 		echoerr 'M002: Too many variations of file'
+" 		return ''
+" 	endif
 
-function! s:generate_new_name(old_name, new_name)
-	" New file
-	if !filereadable(a:new_name)
-		return a:new_name
-	endif
+" 	return s:generate_new_alt_note_name(a:old_name, a:new_name, a:count + 1)
+" endfunction
 
-	return s:generate_new_alt_note_name(a:old_name, a:new_name, 1)
-endfunction
+" function! s:generate_new_name(old_name, new_name)
+" 	" New file
+" 	if !filereadable(a:new_name)
+" 		return a:new_name
+" 	endif
 
-function! s:move_note(old_name, new_name)
-	if empty(a:new_name)
-		echoerr 'M006: Note name cannot be empty'
-	endif
+" 	return s:generate_new_alt_note_name(a:old_name, a:new_name, 1)
+" endfunction
 
-	let l:old_name = resolve(a:old_name)
-	let l:new_name = resolve(a:new_name)
-	" Same file
-	if l:old_name == l:new_name
-		return
-	endif
+" function! s:move_note(old_name, new_name)
+	" if empty(a:new_name)
+	" 	echoerr 'M006: Note name cannot be empty'
+	" endif
 
-	let l:new_name = s:generate_new_name(l:old_name, l:new_name)
+	" let l:old_name = resolve(a:old_name)
+	" let l:new_name = resolve(a:new_name)
+	" " Same file
+	" if l:old_name == l:new_name
+	" 	return
+	" endif
 
-	if empty(a:old_name)
-		exec printf('write %s', l:new_name)
-	else
-		bd
-		let rename_success = rename(a:old_name, l:new_name)
+	" " let l:new_name = s:generate_new_name(l:old_name, l:new_name)
+	" let l:new_name = luaeval('require("ajnasznote").generate_new_name(_A[1], _A[2])', [l:old_name, l:new_name])
 
-		if rename_success == 0
-			exec printf('edit %s', l:new_name)
-			filetype detect
-		else
-			echoerr 'M003: Rename failed'
-		endif
-	endif
-endfunction
+	" if empty(a:old_name)
+	" 	exec printf('write %s', l:new_name)
+	" else
+	" 	bd
+	" 	let rename_success = rename(a:old_name, l:new_name)
 
-function! s:buffer_get_tags()
-	let l:tags = []
-	let l:words = split(getline(3), '\s\+')
+	" 	if rename_success == 0
+	" 		exec printf('edit %s', l:new_name)
+	" 		filetype detect
+	" 	else
+	" 		echoerr 'M003: Rename failed'
+	" 	endif
+	" endif
+" endfunction
 
-	for l:word in l:words
-		if l:word[0] ==# '@'
-			call add(l:tags, l:word)
-		endif
-	endfor
+" function! s:buffer_get_tags()
+" 	let l:tags = []
+" 	let l:words = split(getline(3), '\s\+')
 
-	return l:tags
-endfunction
+" 	for l:word in l:words
+" 		if l:word[0] ==# '@'
+" 			call add(l:tags, l:word)
+" 		endif
+" 	endfor
 
-function! s:buffer_get_commands()
-	let l:commands = []
-	let l:words = split(getline(3), '\s\+')
+" 	return l:tags
+" endfunction
 
-	for l:word in l:words
-		if l:word[0] ==# '+'
-			let l:cmd_parts = split(word, ':')
-			let l:cmd = {}
-			let l:cmd['cmd'] = l:cmd_parts[0]
-			let l:cmd['args'] = l:cmd_parts[1:]
-			call add(l:commands, l:cmd)
-		endif
-	endfor
+" function! s:buffer_get_commands()
+" 	let l:commands = []
+" 	let l:words = split(getline(3), '\s\+')
 
-	return l:commands
-endfunction
+" 	for l:word in l:words
+" 		if l:word[0] ==# '+'
+" 			let l:cmd_parts = split(word, ':')
+" 			let l:cmd = {}
+" 			let l:cmd['cmd'] = l:cmd_parts[0]
+" 			let l:cmd['args'] = l:cmd_parts[1:]
+" 			call add(l:commands, l:cmd)
+" 		endif
+" 	endfor
 
-function! s:buffer_has_tag(tags, tag)
-	for l:tag in a:tags
-		if a:tag == l:tag
-			return v:true
-		endif
-	endfor
+" 	return l:commands
+" endfunction
 
-	return v:false
-endfunction
+" function! s:buffer_has_tag(tags, tag)
+" 	for l:tag in a:tags
+" 		if a:tag == l:tag
+" 			return v:true
+" 		endif
+" 	endfor
+
+" 	return v:false
+" endfunction
 
 function! s:get_matching_tag(tags)
-	let l:buffer_tags = s:buffer_get_tags()
+	" let l:buffer_tags = s:buffer_get_tags()
+	let l:buffer_tags = luaeval('require("ajnasznote").buffer_get_tags()')
 
 	for l:match_tag in a:tags
 		let l:pattern = l:match_tag['pattern']
@@ -136,12 +139,13 @@ function! s:get_matching_tag(tags)
 		let l:pattern_type = type(l:pattern)
 
 		if l:pattern_type == v:t_string
-			let l:has_all_tags = s:buffer_has_tag(l:buffer_tags, l:pattern)
+			" let l:has_all_tags = s:buffer_has_tag(l:buffer_tags, l:pattern)
+			let l:has_all_tags = luaeval('require("ajnasznote").buffer_has_tag(_A[1], _A[2])', [l:buffer_tags, l:pattern])
 		elseif l:pattern_type == v:t_list
 			let l:tags = l:pattern
 
 			for l:tag in l:tags
-				if !s:buffer_has_tag(l:buffer_tags, l:tag)
+				if !luaeval('require("ajnasznote").buffer_has_tag(_A[1], _A[2])', [l:buffer_tags, l:tag])
 					let l:has_all_tags = v:false
 					break
 				endif
@@ -167,7 +171,8 @@ function! ajnasznote#add_match_tags(tags)
 endfunction
 
 function! ajnasznote#rename_note()
-	let l:noramalized_name = s:fix_filename(getline(1))
+	" let l:noramalized_name = s:fix_filename(getline(1))
+	let l:noramalized_name = luaeval('require("ajnasznote").fix_filename(_A)', getline(1))
 	let l:title = tolower(substitute(substitute(l:noramalized_name, '[^A-Za-z0-9_-]\+', '_', 'g'), '^[^A-Za-z0-9]', '', ''))
 
 	if empty(l:title)
@@ -197,7 +202,7 @@ function! ajnasznote#rename_note()
 	let l:old_name = expand('%:p')
 	let l:new_name = fnamemodify(printf('%s/%s.md', l:file_path, l:title), ':p')
 
-	call s:move_note(l:old_name, l:new_name)
+	call luaeval('require("ajnasznote").move_note(_A[1], _A[2])', [l:old_name, l:new_name])
 endfunction
 
 function! ajnasznote#create_note()
@@ -206,11 +211,45 @@ function! ajnasznote#create_note()
 endfunction
 
 function! ajnasznote#exec_doc_commands()
-	let l:commands = s:buffer_get_commands()
+	" let l:commands = s:buffer_get_commands()
+	" let l:commands = luaeval('require("ajnasznote").buffer_get_commands()')
 
-	for l:custom_command in l:commands
-		if l:custom_command['cmd'] ==# '+md_loadsyntax'
-			let g:markdown_fenced_languages += l:custom_command['args']
-		endif
-	endfor
+	" for l:custom_command in l:commands
+	" 	if l:custom_command['cmd'] ==# '+md_loadsyntax'
+	" 		let g:markdown_fenced_languages += l:custom_command['args']
+	" 	endif
+	" endfor
+endfunction
+
+function ajnasznote#handle_search(lines) abort
+	let line = a:lines[0]
+	let tail = matchstrpos(line, ":")
+	let link = line[0:tail[1] - 1]
+	let linked = fnamemodify(link, ':t')
+	let current = expand('%:p:h')
+
+	let p = luaeval('require("ajnasznote").handle_search(_A[1], _A[2], _A[3])', [link, current, line])
+
+	exe 'normal! a['. linked .'](' . p . ')'
+endfunction
+
+
+
+function! ajnasznote#insert_note(pattern)
+	call fzf#run(
+				\ fzf#wrap({
+				\ 'sink': function('ajnasznote#handle_search'),
+				\ 'source': join([
+					\ 'command',
+					\ 'rg',
+					\ '--follow',
+					\ '--smart-case',
+					\ '--line-number',
+					\ '--color never',
+					\ '--no-messages',
+					\ '--no-heading',
+					\ '--with-filename',
+					\ a:pattern,
+					\ '/home/ajnasz/Documents/Notes'
+				\ ])}))
 endfunction
