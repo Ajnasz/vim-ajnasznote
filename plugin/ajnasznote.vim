@@ -9,7 +9,7 @@ if !exists('g:ajnasznote_directory')
 endif
 
 if !exists('g:ajnasznote_match_tags')
-	let g:ajnasznote_match_tags = {}
+	let g:ajnasznote_match_tags = []
 endif
 
 function! NoteCreate()
