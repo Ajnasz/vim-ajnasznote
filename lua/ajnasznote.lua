@@ -5,13 +5,23 @@ end
 local function get_tags()
   return vim.fn.getline(3)
 end
-local function fix_filename(name)
+local function remove_accent_chars(name)
   local chars = {["\195\161"] = "a", ["\195\169"] = "e", ["\195\173"] = "i", ["\195\179"] = "o", ["\195\182"] = "o", ["\197\145"] = "o", ["\195\186"] = "u", ["\195\188"] = "u", ["\197\177"] = "u", ["\195\129"] = "A", ["\195\137"] = "E", ["\195\141"] = "I", ["\195\147"] = "O", ["\195\150"] = "O", ["\197\144"] = "O", ["\195\154"] = "U", ["\195\156"] = "U", ["\197\176"] = "U"}
   local n = name
   for key, char in pairs(chars) do
     n = vim.fn.substitute(n, key, char, "g")
   end
   return n
+end
+local function remove_leading_char(char, input)
+  if (char == string.sub(input, 1, 1)) then
+    return remove_leading_char(char, string.sub(input, 2))
+  else
+    return input
+  end
+end
+local function to_safe_file_name(name)
+  return string.lower(remove_leading_char("_", string.gsub(remove_accent_chars(name), "[^%a%d_-]+", "_")))
 end
 local function generate_new_alt_note_name(old_name, new_name, count)
   local file_name = vim.fn.fnamemodify(new_name, ":t:r")
@@ -32,11 +42,11 @@ local function generate_new_name(old_name, new_name)
   if vim.fn.filereadable then
     return new_name
   else
-    local _3_
+    local _4_
     do
-      _3_ = generate_new_alt_note_name(old_name, new_name, 1)
+      _4_ = generate_new_alt_note_name(old_name, new_name, 1)
     end
-    if _3_ then
+    if _4_ then
       return new_name
     else
       return nil
@@ -110,4 +120,4 @@ local function get_matching_tag(tags)
   end
   return nil
 end
-return {get_matching_tag = get_matching_tag, move_note = move_note, handle_search = handle_search, generate_new_name = generate_new_name, fix_filename = fix_filename, buffer_get_tags = buffer_get_tags, buffer_get_commands = buffer_get_commands, buffer_has_tag = buffer_has_tag, get_title = get_title}
+return {get_matching_tag = get_matching_tag, move_note = move_note, handle_search = handle_search, generate_new_name = generate_new_name, fix_filename = fix_filename, buffer_get_tags = buffer_get_tags, buffer_get_commands = buffer_get_commands, buffer_has_tag = buffer_has_tag, get_title = get_title, remove_accent_chars = remove_accent_chars, to_safe_file_name = to_safe_file_name}

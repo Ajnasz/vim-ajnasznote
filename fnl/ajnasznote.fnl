@@ -16,7 +16,7 @@
 
 (fn get_tags [] (vim.fn.getline 3))
 
-(fn fix_filename [name]
+(fn remove_accent_chars [name]
   (let [chars {
                "á" "a"
                "é" "e"
@@ -42,6 +42,15 @@
       (set n (vim.fn.substitute n key char "g"))
       ) n)
   )
+(fn remove_leading_char [char input]
+  (if (= char (string.sub input 1 1))
+    (remove_leading_char char (string.sub input 2))
+    input))
+
+(fn to_safe_file_name [name]
+  (string.lower (remove_leading_char
+    "_"
+    (string.gsub (remove_accent_chars name) "[^%a%d_-]+" "_"))))
 
 (fn generate_new_alt_note_name [old_name new_name count]
   (let [
@@ -132,4 +141,6 @@
  :buffer_get_commands buffer_get_commands
  :buffer_has_tag buffer_has_tag
  :get_title get_title
+ :remove_accent_chars remove_accent_chars
+ :to_safe_file_name to_safe_file_name
  }
