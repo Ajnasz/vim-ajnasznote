@@ -1,15 +1,20 @@
-; local path = require('pl.path')
-
-; function handle_search(one, other, line)
-; 	return path.relpath(one, other)
-; end
-
-; return {
-; 	handle_search = handle_search,
-; }
-
-
 (local path (require :pl.path))
+(local list (require "ajnasznote.list"))
+
+(fn tolist [list] (if (= (type list) "table") list [list]))
+
+(fn find_matching_tag [tags buffer_tags]
+  (when (> (length tags) 0)
+  (let [ pattern (. (. tags 1) :pattern) ]
+    (list.find
+      (fn [tag]
+        (let [patterns (. tag :pattern)]
+          (list.has_all (tolist patterns) buffer_tags)))
+      tags))))
+
+(fn get_tag_path [tags buffer_tags]
+  (let [matching_tag (find_matching_tag tags buffer_tags)]
+    (when matching_tag (. matching_tag "path"))))
 
 (fn get_title []
   (vim.fn.substitute (vim.fn.getline 1) "^#\\+\\s*" "" ""))
@@ -143,4 +148,5 @@
  :get_title get_title
  :remove_accent_chars remove_accent_chars
  :to_safe_file_name to_safe_file_name
+ :get_tag_path get_tag_path
  }

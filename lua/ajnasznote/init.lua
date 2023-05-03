@@ -1,4 +1,32 @@
 local path = require("pl.path")
+local list = require("ajnasznote.list")
+local function tolist(list0)
+  if (type(list0) == "table") then
+    return list0
+  else
+    return {list0}
+  end
+end
+local function find_matching_tag(tags, buffer_tags)
+  if (#tags > 0) then
+    local pattern = (tags[1]).pattern
+    local function _2_(tag)
+      local patterns = tag.pattern
+      return list.has_all(tolist(patterns), buffer_tags)
+    end
+    return list.find(_2_, tags)
+  else
+    return nil
+  end
+end
+local function get_tag_path(tags, buffer_tags)
+  local matching_tag = find_matching_tag(tags, buffer_tags)
+  if matching_tag then
+    return matching_tag.path
+  else
+    return nil
+  end
+end
 local function get_title()
   return vim.fn.substitute(vim.fn.getline(1), "^#\\+\\s*", "", "")
 end
@@ -42,11 +70,11 @@ local function generate_new_name(old_name, new_name)
   if vim.fn.filereadable then
     return new_name
   else
-    local _4_
+    local _8_
     do
-      _4_ = generate_new_alt_note_name(old_name, new_name, 1)
+      _8_ = generate_new_alt_note_name(old_name, new_name, 1)
     end
-    if _4_ then
+    if _8_ then
       return new_name
     else
       return nil
@@ -120,4 +148,4 @@ local function get_matching_tag(tags)
   end
   return nil
 end
-return {get_matching_tag = get_matching_tag, move_note = move_note, handle_search = handle_search, generate_new_name = generate_new_name, fix_filename = fix_filename, buffer_get_tags = buffer_get_tags, buffer_get_commands = buffer_get_commands, buffer_has_tag = buffer_has_tag, get_title = get_title, remove_accent_chars = remove_accent_chars, to_safe_file_name = to_safe_file_name}
+return {get_matching_tag = get_matching_tag, move_note = move_note, handle_search = handle_search, generate_new_name = generate_new_name, fix_filename = fix_filename, buffer_get_tags = buffer_get_tags, buffer_get_commands = buffer_get_commands, buffer_has_tag = buffer_has_tag, get_title = get_title, remove_accent_chars = remove_accent_chars, to_safe_file_name = to_safe_file_name, get_tag_path = get_tag_path}

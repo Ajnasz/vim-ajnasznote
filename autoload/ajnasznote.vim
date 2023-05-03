@@ -3,35 +3,13 @@ scriptencoding utf-8
 function! s:get_matching_tag(tags)
 	" let l:buffer_tags = s:buffer_get_tags()
 	let l:buffer_tags = luaeval('require("ajnasznote").buffer_get_tags()')
+  let l:tag_path = luaeval('require("ajnasznote").get_tag_path(_A[1], _A[2])', [a:tags, l:buffer_tags])
 
-	for l:match_tag in a:tags
-		let l:pattern = l:match_tag['pattern']
-		let l:has_all_tags = v:true
-		let l:tags = []
-		let l:pattern_type = type(l:pattern)
-
-		if l:pattern_type == v:t_string
-			" let l:has_all_tags = s:buffer_has_tag(l:buffer_tags, l:pattern)
-			let l:has_all_tags = luaeval('require("ajnasznote").buffer_has_tag(_A[1], _A[2])', [l:buffer_tags, l:pattern])
-		elseif l:pattern_type == v:t_list
-			let l:tags = l:pattern
-
-			for l:tag in l:tags
-				if !luaeval('require("ajnasznote").buffer_has_tag(_A[1], _A[2])', [l:buffer_tags, l:tag])
-					let l:has_all_tags = v:false
-					break
-				endif
-			endfor
-		else
-			echoerr 'M005: Invalid pattern'
-		endif
-
-		if l:has_all_tags
-			return l:match_tag['path']
-		endif
-	endfor
-
-	return ''
+  if l:tag_path ==# v:null
+    return ''
+  else
+    return l:tag_path
+  endif
 endfunction
 
 function! ajnasznote#add_match_tags(tags)
