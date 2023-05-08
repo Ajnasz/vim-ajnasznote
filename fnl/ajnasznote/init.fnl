@@ -73,8 +73,19 @@
 (fn generate_new_name [old_name new_name]
   (if vim.fn.filereadable new_name (do (generate_new_alt_note_name old_name new_name 1)) new_name))
 
-(fn handle_search [one other]
-  (path.relpath one other))
+(fn handle_search [lines]
+  (let [
+        line (. lines 1)
+        x (print "line: " line)
+        tail (vim.fn.matchstrpos line ":")
+        link (string.sub line 1 (. tail 2))
+        linked (vim.fn.fnamemodify link ":t")
+        current (vim.fn.expand "%:p:h")
+        p (path.relpath link current)
+        ]
+    (vim.cmd (vim.fn.printf "normal! a[%s](%s)" linked p))
+    )
+  )
 
 (fn buffer_get_tags []
   (accumulate
@@ -132,21 +143,72 @@
     )
 
 (fn get_matching_tag [tags]
-  (let [buffer_tags (buffer_get_tags)]
-    (each [_ match_tag (ipairs tags)]
-      (let [pattern (. match_tag :pattern)] (do)))
-    (do)))
+  (get_tag_path tags (buffer_get_tags)))
+
+(fn get_default_file_dir []
+  (let [file_path (vim.fn.fnameescape (vim.fn.resolve (vim.fn.expand "%:h")))]
+  (if (= file_path "")
+    (vim.fn.expand vim.g.ajnasznote_directory)
+    file_path))
+  )
+
+(fn get_tag_path_file_dir [tag_path]
+  (vim.fn.fnameescape (vim.fn.expand (vim.fn.printf "%s/%s" vim.g.ajnasznote_directory tag_path))))
+
+(fn get_note_dir []
+  (let [tag_path (get_matching_tag vim.g.ajnasznote_match_tags)]
+    (if tag_path
+      (get_tag_path_file_dir tag_path)
+      (get_default_file_dir))))
+
+(fn mk_note_dir [dirname]
+  (when (= 0 (vim.fn.exists dirname)) (vim.fn.mkdir dirname :p))
+  (when (= 0 (vim.fn.isdirectory dirname)) (vim.api.nvim_command "M004: Not a directory")))
+
+(fn get_new_file_name []
+  (let [title (to_safe_file_name (vim.fn.getline 1))]
+    (when (not (= title ""))
+      (let [file_path (get_note_dir)]
+        (when file_path
+          (vim.fn.fnamemodify (vim.fn.printf "%s/%s.md" file_path title) ":p")
+          )))))
+
+(fn rename_note []
+  (let [new_name (get_new_file_name)]
+    (when new_name
+      (do
+        (mk_note_dir (get_note_dir))
+        (move_note (vim.fn.expand "%:p") new_name)
+        ))))
+
+(fn add_match_tags [tags]
+  (when (not vim.g.ajnasznote_match_tags)
+    (tset vim.g "ajnasznote_match_tags" []))
+  (tset vim.g "ajnasznote_match_tags" (vim.list_extend vim.g.ajnasznote_match_tags tags)))
+
+
+(fn create_note []
+  (vim.cmd
+    (vim.fn.printf
+      "edit %s/%s.md"
+      (vim.fn.expand vim.g.ajnasznote_directory)
+      (vim.fn.strftime "%Y-%m-%d_%H%M%s")
+      )))
+
+
+(fn insert_note []
+  (local fzf (require "fzf-lua"))
+  (print "insert lua link")
+
+  (fzf.fzf_live
+    "rg --column --line-number --no-heading --color=always --smart-case <query> /home/ajnasz/Documents/Notes"
+    { :actions { :default handle_search } })
+  )
+
 {
- :get_matching_tag get_matching_tag
- :move_note move_note
- :handle_search handle_search
- :generate_new_name generate_new_name
- :fix_filename fix_filename
- :buffer_get_tags buffer_get_tags
  :buffer_get_commands buffer_get_commands
- :buffer_has_tag buffer_has_tag
- :get_title get_title
- :remove_accent_chars remove_accent_chars
- :to_safe_file_name to_safe_file_name
- :get_tag_path get_tag_path
+ :rename_note rename_note
+ :add_match_tags add_match_tags
+ :create_note create_note
+ :insert_note insert_note
  }

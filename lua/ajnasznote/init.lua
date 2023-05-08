@@ -81,8 +81,15 @@ local function generate_new_name(old_name, new_name)
     end
   end
 end
-local function handle_search(one, other)
-  return path.relpath(one, other)
+local function handle_search(lines)
+  local line = lines[1]
+  local x = print("line: ", line)
+  local tail = vim.fn.matchstrpos(line, ":")
+  local link = string.sub(line, 1, tail[2])
+  local linked = vim.fn.fnamemodify(link, ":t")
+  local current = vim.fn.expand("%:p:h")
+  local p = path.relpath(link, current)
+  return vim.cmd(vim.fn.printf("normal! a[%s](%s)", linked, p))
 end
 local function buffer_get_tags()
   local out = {}
@@ -142,10 +149,74 @@ local function move_note(old_name_arg, new_name_arg)
   end
 end
 local function get_matching_tag(tags)
-  local buffer_tags = buffer_get_tags()
-  for _, match_tag in ipairs(tags) do
-    local pattern = match_tag.pattern
+  return get_tag_path(tags, buffer_get_tags())
+end
+local function get_default_file_dir()
+  local file_path = vim.fn.fnameescape(vim.fn.resolve(vim.fn.expand("%:h")))
+  if (file_path == "") then
+    return vim.fn.expand(vim.g.ajnasznote_directory)
+  else
+    return file_path
   end
+end
+local function get_tag_path_file_dir(tag_path)
+  return vim.fn.fnameescape(vim.fn.expand(vim.fn.printf("%s/%s", vim.g.ajnasznote_directory, tag_path)))
+end
+local function get_note_dir()
+  local tag_path = get_matching_tag(vim.g.ajnasznote_match_tags)
+  if tag_path then
+    return get_tag_path_file_dir(tag_path)
+  else
+    return get_default_file_dir()
+  end
+end
+local function mk_note_dir(dirname)
+  if (0 == vim.fn.exists(dirname)) then
+    vim.fn.mkdir(dirname, "p")
+  else
+  end
+  if (0 == vim.fn.isdirectory(dirname)) then
+    return vim.api.nvim_command("M004: Not a directory")
+  else
+    return nil
+  end
+end
+local function get_new_file_name()
+  local title = to_safe_file_name(vim.fn.getline(1))
+  if not (title == "") then
+    local file_path = get_note_dir()
+    if file_path then
+      return vim.fn.fnamemodify(vim.fn.printf("%s/%s.md", file_path, title), ":p")
+    else
+      return nil
+    end
+  else
+    return nil
+  end
+end
+local function rename_note()
+  local new_name = get_new_file_name()
+  if new_name then
+    mk_note_dir(get_note_dir())
+    return move_note(vim.fn.expand("%:p"), new_name)
+  else
+    return nil
+  end
+end
+local function add_match_tags(tags)
+  if not vim.g.ajnasznote_match_tags then
+    vim.g["ajnasznote_match_tags"] = {}
+  else
+  end
+  vim.g["ajnasznote_match_tags"] = vim.list_extend(vim.g.ajnasznote_match_tags, tags)
   return nil
 end
-return {get_matching_tag = get_matching_tag, move_note = move_note, handle_search = handle_search, generate_new_name = generate_new_name, fix_filename = fix_filename, buffer_get_tags = buffer_get_tags, buffer_get_commands = buffer_get_commands, buffer_has_tag = buffer_has_tag, get_title = get_title, remove_accent_chars = remove_accent_chars, to_safe_file_name = to_safe_file_name, get_tag_path = get_tag_path}
+local function create_note()
+  return vim.cmd(vim.fn.printf("edit %s/%s.md", vim.fn.expand(vim.g.ajnasznote_directory), vim.fn.strftime("%Y-%m-%d_%H%M%s")))
+end
+local function insert_note()
+  local fzf = require("fzf-lua")
+  print("insert lua link")
+  return fzf.fzf_live("rg --column --line-number --no-heading --color=always --smart-case <query> /home/ajnasz/Documents/Notes", {actions = {default = handle_search}})
+end
+return {buffer_get_commands = buffer_get_commands, rename_note = rename_note, add_match_tags = add_match_tags, create_note = create_note, insert_note = insert_note}
