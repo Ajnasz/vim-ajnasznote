@@ -61,7 +61,7 @@
   (let [
         file_name (vim.fn.fnamemodify new_name ":t:r")
         file_directory (vim.fn.fnamemodify ":h")
-        formatted_new_name (vim.fn.resolve (vim.fn.printf "%s/%s_%d.md") file_directory file_name count)
+        formatted_new_name (vim.fn.resolve (string.format "%s/%s_%d.md") file_directory file_name count)
         ]
 
     (if (or (= formatted_new_name new_name) (vim.fn.filereadable formatted_new_name)) formatted_new_name
@@ -83,7 +83,7 @@
         current (vim.fn.expand "%:p:h")
         p (path.relpath link current)
         ]
-    (vim.cmd (vim.fn.printf "normal! a[%s](%s)" linked p))
+    (vim.cmd (string.format "normal! a[%s](%s)" linked p))
     )
   )
 
@@ -128,12 +128,12 @@
         ]
     (when (not (= resolved_old_name resolved_new_name))
       (let [new_name (generate_new_name resolved_old_name resolved_new_name)]
-        (if (= "" resolved_old_name) (vim.api.nvim_command (vim.fn.printf "write %s" new_name))
+        (if (= "" resolved_old_name) (vim.api.nvim_command (string.format "write %s" new_name))
           (do
             (vim.api.nvim_command "bd")
             (if (= 0 (vim.fn.rename resolved_old_name new_name))
               (do
-                (vim.api.nvim_command (vim.fn.printf "edit %s" new_name))
+                (vim.api.nvim_command (string.format "edit %s" new_name))
                 (vim.api.nvim_command "filetype detect")
                 )
               (vim.api.nvim_command "echoerr 'M003: Rename failed'")
@@ -153,7 +153,7 @@
   )
 
 (fn get_tag_path_file_dir [tag_path]
-  (vim.fn.fnameescape (vim.fn.expand (vim.fn.printf "%s/%s" vim.g.ajnasznote_directory tag_path))))
+  (vim.fn.fnameescape (vim.fn.expand (string.format "%s/%s" vim.g.ajnasznote_directory tag_path))))
 
 (fn get_note_dir []
   (let [tag_path (get_matching_tag vim.g.ajnasznote_match_tags)]
@@ -170,7 +170,7 @@
     (when (not (= title ""))
       (let [file_path (get_note_dir)]
         (when file_path
-          (vim.fn.fnamemodify (vim.fn.printf "%s/%s.md" file_path title) ":p")
+          (vim.fn.fnamemodify (string.format "%s/%s.md" file_path title) ":p")
           )))))
 
 (fn rename_note []
@@ -189,7 +189,7 @@
 
 (fn create_note []
   (vim.cmd
-    (vim.fn.printf
+    (string.format
       "edit %s/%s.md"
       (vim.fn.expand vim.g.ajnasznote_directory)
       (vim.fn.strftime "%Y-%m-%d_%H%M%s")

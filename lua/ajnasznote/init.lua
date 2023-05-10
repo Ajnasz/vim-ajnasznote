@@ -54,7 +54,7 @@ end
 local function generate_new_alt_note_name(old_name, new_name, count)
   local file_name = vim.fn.fnamemodify(new_name, ":t:r")
   local file_directory = vim.fn.fnamemodify(":h")
-  local formatted_new_name = vim.fn.resolve(vim.fn.printf("%s/%s_%d.md"), file_directory, file_name, count)
+  local formatted_new_name = vim.fn.resolve(string.format("%s/%s_%d.md"), file_directory, file_name, count)
   if ((formatted_new_name == new_name) or vim.fn.filereadable(formatted_new_name)) then
     return formatted_new_name
   else
@@ -89,7 +89,7 @@ local function handle_search(lines)
   local linked = vim.fn.fnamemodify(link, ":t")
   local current = vim.fn.expand("%:p:h")
   local p = path.relpath(link, current)
-  return vim.cmd(vim.fn.printf("normal! a[%s](%s)", linked, p))
+  return vim.cmd(string.format("normal! a[%s](%s)", linked, p))
 end
 local function buffer_get_tags()
   local out = {}
@@ -134,11 +134,11 @@ local function move_note(old_name_arg, new_name_arg)
   if not (resolved_old_name == resolved_new_name) then
     local new_name = generate_new_name(resolved_old_name, resolved_new_name)
     if ("" == resolved_old_name) then
-      return vim.api.nvim_command(vim.fn.printf("write %s", new_name))
+      return vim.api.nvim_command(string.format("write %s", new_name))
     else
       vim.api.nvim_command("bd")
       if (0 == vim.fn.rename(resolved_old_name, new_name)) then
-        vim.api.nvim_command(vim.fn.printf("edit %s", new_name))
+        vim.api.nvim_command(string.format("edit %s", new_name))
         return vim.api.nvim_command("filetype detect")
       else
         return vim.api.nvim_command("echoerr 'M003: Rename failed'")
@@ -160,7 +160,7 @@ local function get_default_file_dir()
   end
 end
 local function get_tag_path_file_dir(tag_path)
-  return vim.fn.fnameescape(vim.fn.expand(vim.fn.printf("%s/%s", vim.g.ajnasznote_directory, tag_path)))
+  return vim.fn.fnameescape(vim.fn.expand(string.format("%s/%s", vim.g.ajnasznote_directory, tag_path)))
 end
 local function get_note_dir()
   local tag_path = get_matching_tag(vim.g.ajnasznote_match_tags)
@@ -186,7 +186,7 @@ local function get_new_file_name()
   if not (title == "") then
     local file_path = get_note_dir()
     if file_path then
-      return vim.fn.fnamemodify(vim.fn.printf("%s/%s.md", file_path, title), ":p")
+      return vim.fn.fnamemodify(string.format("%s/%s.md", file_path, title), ":p")
     else
       return nil
     end
@@ -212,7 +212,7 @@ local function add_match_tags(tags)
   return nil
 end
 local function create_note()
-  return vim.cmd(vim.fn.printf("edit %s/%s.md", vim.fn.expand(vim.g.ajnasznote_directory), vim.fn.strftime("%Y-%m-%d_%H%M%s")))
+  return vim.cmd(string.format("edit %s/%s.md", vim.fn.expand(vim.g.ajnasznote_directory), vim.fn.strftime("%Y-%m-%d_%H%M%s")))
 end
 local function insert_note()
   local fzf = require("fzf-lua")
