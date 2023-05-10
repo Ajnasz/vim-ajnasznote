@@ -1,5 +1,6 @@
 (local path (require :pl.path))
 (local list (require "ajnasznote.list"))
+(local telescopebuiltin (require :telescope.builtin))
 
 (fn tolist [list] (if (= (type list) "table") list [list]))
 
@@ -183,8 +184,8 @@
 
 (fn add_match_tags [tags]
   (when (not vim.g.ajnasznote_match_tags)
-    (tset vim.g "ajnasznote_match_tags" []))
-  (tset vim.g "ajnasznote_match_tags" (vim.list_extend vim.g.ajnasznote_match_tags tags)))
+    (set vim.g.ajnasznote_match_tags []))
+  (set vim.g.ajnasznote_match_tags (vim.list_extend vim.g.ajnasznote_match_tags tags)))
 
 
 (fn create_note []
@@ -205,10 +206,45 @@
     { :actions { :default handle_search } })
   )
 
+(fn note_explore []
+    (vim.cmd (string.format "Lexplore %s" vim.g.ajnasznote_directory)))
+
+(fn setup [config]
+  (when (not vim.g.ajnasznote_directory)
+    (set vim.g.ajnasznote_directory (os.getenv "HOME")))
+  (when (not vim.g.ajnasznote_match_tags)
+    (set vim.g.ajnasznote_match_tags []))
+
+  (vim.api.nvim_create_user_command "NoteCreate" create_note {})
+  (vim.api.nvim_create_user_command "NoteExplore" note_explore {})
+  (vim.api.nvim_create_user_command "InsertLink" insert_note {})
+  (vim.keymap.set "n" "<leader>nn" create_note {})
+  (when telescopebuiltin
+    (vim.keymap.set
+      "n"
+      "<leader><esc>"
+      #(telescopebuiltin.live_grep
+         {
+          :cwd vim.g.ajnasznote_directory
+          :cmd "rg --line-number --column --color=always"
+          }) {}))
+
+  (local augroup (vim.api.nvim_create_augroup "ajnasznote" {}))
+  (vim.api.nvim_create_autocmd
+    ["BufRead" "BufNewFile" "BufEnter"]
+    {
+     :group "ajnasznote"
+     :pattern ["*/Notes/*.md"]
+     :command "set conceallevel=2 wrap lbr tw=80 wrapmargin=0 showbreak=\\\\n>"
+     }
+    )
+  )
+
 {
  :buffer_get_commands buffer_get_commands
  :rename_note rename_note
  :add_match_tags add_match_tags
  :create_note create_note
  :insert_note insert_note
+ :setup setup
  }

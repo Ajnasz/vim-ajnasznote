@@ -1,5 +1,6 @@
 local path = require("pl.path")
 local list = require("ajnasznote.list")
+local telescopebuiltin = require("telescope.builtin")
 local function tolist(list0)
   if (type(list0) == "table") then
     return list0
@@ -205,10 +206,10 @@ local function rename_note()
 end
 local function add_match_tags(tags)
   if not vim.g.ajnasznote_match_tags then
-    vim.g["ajnasznote_match_tags"] = {}
+    vim.g.ajnasznote_match_tags = {}
   else
   end
-  vim.g["ajnasznote_match_tags"] = vim.list_extend(vim.g.ajnasznote_match_tags, tags)
+  vim.g.ajnasznote_match_tags = vim.list_extend(vim.g.ajnasznote_match_tags, tags)
   return nil
 end
 local function create_note()
@@ -219,4 +220,30 @@ local function insert_note()
   print("insert lua link")
   return fzf.fzf_live("rg --column --line-number --no-heading --color=always --smart-case <query> /home/ajnasz/Documents/Notes", {actions = {default = handle_search}})
 end
-return {buffer_get_commands = buffer_get_commands, rename_note = rename_note, add_match_tags = add_match_tags, create_note = create_note, insert_note = insert_note}
+local function note_explore()
+  return vim.cmd(string.format("Lexplore %s", vim.g.ajnasznote_directory))
+end
+local function setup(config)
+  if not vim.g.ajnasznote_directory then
+    vim.g.ajnasznote_directory = os.getenv("HOME")
+  else
+  end
+  if not vim.g.ajnasznote_match_tags then
+    vim.g.ajnasznote_match_tags = {}
+  else
+  end
+  vim.api.nvim_create_user_command("NoteCreate", create_note, {})
+  vim.api.nvim_create_user_command("NoteExplore", note_explore, {})
+  vim.api.nvim_create_user_command("InsertLink", insert_note, {})
+  vim.keymap.set("n", "<leader>nn", create_note, {})
+  if telescopebuiltin then
+    local function _26_()
+      return telescopebuiltin.live_grep({cwd = vim.g.ajnasznote_directory, cmd = "rg --line-number --column --color=always"})
+    end
+    vim.keymap.set("n", "<leader><esc>", _26_, {})
+  else
+  end
+  local augroup = vim.api.nvim_create_augroup("ajnasznote", {})
+  return vim.api.nvim_create_autocmd({"BufRead", "BufNewFile", "BufEnter"}, {group = "ajnasznote", pattern = {"*/Notes/*.md"}, command = "set conceallevel=2 wrap lbr tw=80 wrapmargin=0 showbreak=\\\\n>"})
+end
+return {buffer_get_commands = buffer_get_commands, rename_note = rename_note, add_match_tags = add_match_tags, create_note = create_note, insert_note = insert_note, setup = setup}
