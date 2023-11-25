@@ -1,4 +1,5 @@
 (local list (require "ajnasznote.list"))
+
 (fn tolist [list] (if (= (type list) "table") list [list]))
 
 (fn buffer_has_tag [tags tag]
@@ -22,13 +23,19 @@
     (when matching_tag (. matching_tag "path"))))
 
 
-(fn get_tags [] (vim.fn.getline 3))
+(fn get_tags []
+  (local notemeta (require "ajnasznote.notemeta"))
+  (local meta_dict (notemeta.get_meta_dict))
+  (if meta_dict
+    (icollect [_ v (ipairs (. meta_dict :tags))] (.. "@" v))
+    (vim.fn.split (vim.fn.getline 3) "\\s\\+"))
+  )
 
 (fn buffer_get_tags []
   (accumulate
     [
      out []
-     _ word (ipairs (vim.fn.split (get_tags) "\\s\\+"))
+     _ word (ipairs (get_tags))
      ]
     (if (= (string.sub word 1 1) "@")
       (do (tset out (+ 1 (length out)) word) out)

@@ -35,11 +35,27 @@ local function get_tag_path(tags, buffer_tags)
   end
 end
 local function get_tags()
-  return vim.fn.getline(3)
+  local notemeta = require("ajnasznote.notemeta")
+  local meta_dict = notemeta.get_meta_dict()
+  if meta_dict then
+    local tbl_17_auto = {}
+    local i_18_auto = #tbl_17_auto
+    for _, v in ipairs(meta_dict.tags) do
+      local val_19_auto = ("@" .. v)
+      if (nil ~= val_19_auto) then
+        i_18_auto = (i_18_auto + 1)
+        do end (tbl_17_auto)[i_18_auto] = val_19_auto
+      else
+      end
+    end
+    return tbl_17_auto
+  else
+    return vim.fn.split(vim.fn.getline(3), "\\s\\+")
+  end
 end
 local function buffer_get_tags()
   local out = {}
-  for _, word in ipairs(vim.fn.split(get_tags(), "\\s\\+")) do
+  for _, word in ipairs(get_tags()) do
     if (string.sub(word, 1, 1) == "@") then
       out[(1 + #out)] = word
       out = out

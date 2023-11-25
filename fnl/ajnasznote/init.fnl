@@ -1,13 +1,29 @@
-(local path (require :pl.path))
-(local notename (require "ajnasznote.notename"))
-(local notetag (require "ajnasznote.notetag"))
-(local telescopebuiltin (require :telescope.builtin))
-(local telescopeactions (require :telescope.actions))
-(local telescopeactions_state (require :telescope.actions.state))
+(local notetag (require :ajnasznote.notetag))
+(local gen_entry (require :ajnasznote.gen_entry))
 
-(fn get_title []
-  (vim.fn.substitute (vim.fn.getline 1) "^#\\+\\s*" "" ""))
+(fn strip_md_from_title [title]
+  (vim.fn.substitute title "^#\\+\\s*" "" ""))
 
+(fn get_buf_title [bufnr]
+  (local notemeta (require :ajnasznote.notemeta))
+  (let [meta (notemeta.get_meta_dict)]
+    (if (and meta (. meta :title))
+      (. meta :title)
+      (let [meta_end_line (notemeta.get_meta_end_line bufnr)]
+        (vim.fn.getbufoneline
+          (or bufnr 0)
+          (if meta_end_line (+ meta_end_line 1) 1)
+          )
+        )
+      )
+    )
+  )
+
+(fn get_title [bufnr]
+  (strip_md_from_title (get_buf_title (or bufnr 0))))
+
+(fn get_note_title [path]
+    (get_title (vim.fn.bufnr path true)) (vim.fn.fnamemodify path ":t"))
 
 (fn remove_accent_chars [name]
   (let [chars {
@@ -48,14 +64,13 @@
 
 (fn get_rel_path [p]
   (let [current (vim.fn.expand "%:p:h")]
-    (path.relpath p current)))
+    ((. (require :pl.path) :relpath) p current)))
 
 (fn get_link [p]
   (let [rel_path (get_rel_path p)]
-    (string.format "[%s](%s)" (vim.fn.fnamemodify p ":t") rel_path)))
+    (string.format "[%s](%s)" (get_note_title p) rel_path)))
 
 (fn insert_note [lines] (vim.cmd (string.format "normal! a%s" (get_link (. lines 1)))))
-
 
 (fn buffer_get_commands []
   (accumulate
@@ -79,7 +94,7 @@
         resolved_new_name (vim.fn.resolve new_name_arg)
         ]
     (when (not (= resolved_old_name resolved_new_name))
-      (let [new_name (notename.new resolved_old_name resolved_new_name)]
+      (let [new_name ((. (require :ajnasznote.notename) :new) resolved_old_name resolved_new_name)]
         (if (= "" resolved_old_name) (vim.api.nvim_command (string.format "write %s" new_name))
           (do
             (vim.api.nvim_command "bd")
@@ -111,8 +126,8 @@
   (when (= 0 (vim.fn.exists dirname)) (vim.fn.mkdir dirname :p))
   (when (= 0 (vim.fn.isdirectory dirname)) (vim.api.nvim_command "M004: Not a directory")))
 
-(fn get_new_file_name []
-  (let [title (to_safe_file_name (vim.fn.getline 1))]
+(fn get_new_file_name [bufnr]
+  (let [title (to_safe_file_name (get_title bufnr))]
     (when (not (= title ""))
       (let [file_path (get_note_dir)]
         (when file_path
@@ -120,12 +135,13 @@
           )))))
 
 (fn rename_note []
-  (let [new_name (get_new_file_name)]
+  (let [new_name (get_new_file_name (vim.fn.bufnr ""))]
     (when new_name
       (do
         (mk_note_dir (get_note_dir))
         (move_note (vim.fn.expand "%:p") new_name)
-        ))))
+        )))
+  )
 
 
 (fn create_note []
@@ -137,7 +153,7 @@
       )))
 
 (fn exec_insert_note []
-  (telescopebuiltin.live_grep
+  ((. (require :telescope.builtin ) :live_grep)
     {
      :cwd vim.g.ajnasznote_directory
      ; :cmd "rg --line-number --column --color=always"
@@ -145,8 +161,8 @@
      (fn [prompt_bufnr map]
        (map :i "<cr>"
             (fn []
-              (telescopeactions.close prompt_bufnr)
-              (insert_note [(. (telescopeactions_state.get_selected_entry) :filename)])))
+              ((. (require :telescope.actions) :close) prompt_bufnr)
+              (insert_note [(. ((. (require :telescope.actions.state) :get_selected_entry)) :path)])))
        true)
      }))
 
@@ -154,15 +170,24 @@
   (vim.cmd (string.format "Lexplore %s" vim.g.ajnasznote_directory)))
 
 
+(fn path_display [opts path]
+  (local utils (require "telescope.utils"))
+  (local tail (utils.path_tail path))
+  (string.format "%s (%s)" tail path)
+  )
+
 (fn grep_in_notes []
-  (telescopebuiltin.live_grep
+  ((. (require :telescope.builtin) :live_grep)
     {
      :cwd vim.g.ajnasznote_directory
+     ; :entry_maker gen_entry
+     :disable_devicons true
+     :disable_coordinates true
      ; :cmd "rg --line-number --column --color=always"
      }))
 
 (fn find_links []
-  (telescopebuiltin.grep_string
+  ((. (require :telescope.builtin) :grep_string)
   {
      :cwd vim.g.ajnasznote_directory
      :use_regex true
@@ -182,11 +207,8 @@
 
   (vim.keymap.set "n" "<leader>nn" create_note {})
 
-  (when telescopebuiltin
-    (do 
-    (vim.keymap.set "n" "<leader><esc>" grep_in_notes {})
-    (vim.keymap.set "n" "<leader>l" find_links {})
-    ))
+  (vim.keymap.set "n" "<leader><esc>" grep_in_notes {})
+  (vim.keymap.set "n" "<leader>l" find_links {})
 
   (local augroup (vim.api.nvim_create_augroup "ajnasznote" {}))
   (vim.api.nvim_create_autocmd
