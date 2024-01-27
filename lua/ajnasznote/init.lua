@@ -42,12 +42,15 @@ local function remove_leading_char(char, input)
     return input
   end
 end
-local function to_safe_file_name(name)
+local function to_en_only_file_name(name)
   return string.lower(remove_leading_char("_", string.gsub(remove_accent_chars(name), "[^%a%d_-]+", "_")))
+end
+local function to_safe_file_name(name)
+  return to_en_only_file_name(name)
 end
 local function get_rel_path(p)
   local current = vim.fn.expand("%:p:h")
-  return (require("pl.path")).relpath(p, current)
+  return require("pl.path").relpath(p, current)
 end
 local function get_link(p)
   local rel_path = get_rel_path(p)
@@ -77,11 +80,14 @@ local function move_note(old_name_arg, new_name_arg)
   local resolved_old_name = vim.fn.resolve(old_name_arg)
   local resolved_new_name = vim.fn.resolve(new_name_arg)
   if not (resolved_old_name == resolved_new_name) then
-    local new_name = (require("ajnasznote.notename")).new(resolved_old_name, resolved_new_name)
+    local new_name = require("ajnasznote.notename").new(resolved_old_name, resolved_new_name)
     if ("" == resolved_old_name) then
       return vim.api.nvim_command(string.format("write %s", new_name))
     else
-      vim.api.nvim_command("bd")
+      local function _6_()
+        return vim.api.nvim_command("bd")
+      end
+      pcall(_6_)
       if (0 == vim.fn.rename(resolved_old_name, new_name)) then
         vim.api.nvim_command(string.format("edit %s", new_name))
         return vim.api.nvim_command("filetype detect")
@@ -146,15 +152,15 @@ local function create_note()
   return vim.cmd(string.format("edit %s/%s.md", vim.fn.expand(vim.g.ajnasznote_directory), vim.fn.strftime("%Y-%m-%d_%H%M%s")))
 end
 local function exec_insert_note()
-  local function _16_(prompt_bufnr, map)
-    local function _17_()
-      do end (require("telescope.actions")).close(prompt_bufnr)
-      return insert_note({((require("telescope.actions.state")).get_selected_entry()).path})
+  local function _17_(prompt_bufnr, map)
+    local function _18_()
+      require("telescope.actions").close(prompt_bufnr)
+      return insert_note({require("telescope.actions.state").get_selected_entry().path})
     end
-    map("i", "<cr>", _17_)
+    map("i", "<cr>", _18_)
     return true
   end
-  return (require("telescope.builtin")).live_grep({cwd = vim.g.ajnasznote_directory, attach_mappings = _16_})
+  return require("telescope.builtin").live_grep({cwd = vim.g.ajnasznote_directory, attach_mappings = _17_})
 end
 local function note_explore()
   return vim.cmd(string.format("Lexplore %s", vim.g.ajnasznote_directory))
@@ -165,10 +171,23 @@ local function path_display(opts, path)
   return string.format("%s (%s)", tail, path)
 end
 local function grep_in_notes()
-  return (require("telescope.builtin")).live_grep({cwd = vim.g.ajnasznote_directory, disable_devicons = true, disable_coordinates = true})
+  return require("telescope.builtin").live_grep({cwd = vim.g.ajnasznote_directory, disable_devicons = true, disable_coordinates = true})
 end
 local function find_links()
-  return (require("telescope.builtin")).grep_string({cwd = vim.g.ajnasznote_directory, use_regex = true, search = ("\\[[^]]*" .. vim.fn.expand("%:t") .. "\\]\\([^)]+\\)")})
+  return require("telescope.builtin").grep_string({cwd = vim.g.ajnasznote_directory, use_regex = true, search = ("\\[[^]]*" .. vim.fn.expand("%:t") .. "\\]\\([^)]+\\)")})
+end
+local function remove_note(opts)
+  do
+    local file_path
+    if (#opts.args > 0) then
+      file_path = opts.args
+    else
+      file_path = vim.fn.expand("%")
+    end
+    vim.uv.fs_unlink(file_path)
+  end
+  vim.api.nvim_command("echo 'Note removed'")
+  return vim.api.nvim_command("bd")
 end
 local function setup(config)
   if not vim.g.ajnasznote_directory then
@@ -182,6 +201,7 @@ local function setup(config)
   vim.api.nvim_create_user_command("NoteCreate", create_note, {})
   vim.api.nvim_create_user_command("NoteExplore", note_explore, {})
   vim.api.nvim_create_user_command("InsertLink", exec_insert_note, {})
+  vim.api.nvim_create_user_command("NoteRemove", remove_note, {})
   vim.keymap.set("n", "<leader>nn", create_note, {})
   vim.keymap.set("n", "<leader><esc>", grep_in_notes, {})
   vim.keymap.set("n", "<leader>l", find_links, {})

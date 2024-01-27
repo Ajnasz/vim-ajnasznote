@@ -56,11 +56,17 @@
     (remove_leading_char char (string.sub input 2))
     input))
 
-(fn to_safe_file_name [name]
+(fn to_en_only_file_name [name]
   (string.lower
     (remove_leading_char
       "_"
       (string.gsub (remove_accent_chars name) "[^%a%d_-]+" "_"))))
+
+(fn to_safe_file_name [name]
+  (to_en_only_file_name name)
+  ; (local str (require :ajnasznote.strings))
+  ; (str.trim name)
+  )
 
 (fn get_rel_path [p]
   (let [current (vim.fn.expand "%:p:h")]
@@ -97,7 +103,7 @@
       (let [new_name ((. (require :ajnasznote.notename) :new) resolved_old_name resolved_new_name)]
         (if (= "" resolved_old_name) (vim.api.nvim_command (string.format "write %s" new_name))
           (do
-            (vim.api.nvim_command "bd")
+            (pcall #(vim.api.nvim_command "bd"))
             (if (= 0 (vim.fn.rename resolved_old_name new_name))
               (do
                 (vim.api.nvim_command (string.format "edit %s" new_name))
@@ -195,6 +201,13 @@
    }
   ))
 
+(fn remove_note [opts]
+  (let [file_path (if (> (length (. opts :args)) 0) (. opts :args) (vim.fn.expand "%"))]
+    (vim.uv.fs_unlink file_path))
+    (vim.api.nvim_command "echo 'Note removed'")
+    (vim.api.nvim_command "bd")
+    )
+
 (fn setup [config]
   (when (not vim.g.ajnasznote_directory)
     (set vim.g.ajnasznote_directory (. config "directory")))
@@ -204,6 +217,7 @@
   (vim.api.nvim_create_user_command "NoteCreate" create_note {})
   (vim.api.nvim_create_user_command "NoteExplore" note_explore {})
   (vim.api.nvim_create_user_command "InsertLink" exec_insert_note {})
+  (vim.api.nvim_create_user_command "NoteRemove" remove_note {})
 
   (vim.keymap.set "n" "<leader>nn" create_note {})
 
