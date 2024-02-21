@@ -1,6 +1,6 @@
 local Path = require("plenary.path")
 local function handle_entry_index(opts, t, k)
-  local override = ((((opts or {})).entry_index or {}))[k]
+  local override = ((opts or {}).entry_index or {})[k]
   if override then
     local val, save = override(t, opts)
     if save then
@@ -36,7 +36,7 @@ local function execute_key_path(t)
   if is_absolute(t) then
     return {t.filename, false}
   else
-    return {(Path:new({t.cwd, t.filename})).absolute(), false}
+    return {Path:new({t.cwd, t.filename}).absolute(), false}
   end
 end
 local function execute_key_common(parse, num)
@@ -85,16 +85,16 @@ end
 local function gen_from_vimgrep(opts)
   local opts0 = (opts or {})
   local parse
-  if (true == (opts0).__matches) then
-    parse = (require("telescope.make_entry")).parse_with_col
+  if (true == opts0.__matches) then
+    parse = require("telescope.make_entry").parse_with_col
   else
-    if (true == (opts0).__inverted) then
+    if (true == opts0.__inverted) then
       parse = parse_with_col
     else
       parse = nil
     end
   end
-  local only_sort_text = (opts0).only_sort_text
+  local only_sort_text = opts0.only_sort_text
   local execute_keys = {path = execute_key_path, filename = execute_key_common(parse, 1), lnum = execute_key_common(parse, 2), col = execute_key_common(parse, 3), text = execute_key_common(parse, 4)}
   if only_sort_text then
     local function _15_(t)

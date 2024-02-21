@@ -16,7 +16,7 @@ local function buffer_has_tag(tags, tag)
 end
 local function find_matching_tag(tags, buffer_tags)
   if (#tags > 0) then
-    local pattern = (tags[1]).pattern
+    local pattern = tags[1].pattern
     local function _2_(tag)
       local patterns = tag.pattern
       return list.has_all(tolist(patterns), buffer_tags)
@@ -38,17 +38,17 @@ local function get_tags()
   local notemeta = require("ajnasznote.notemeta")
   local meta_dict = notemeta.get_meta_dict()
   if meta_dict then
-    local tbl_17_auto = {}
-    local i_18_auto = #tbl_17_auto
+    local tbl_18_auto = {}
+    local i_19_auto = 0
     for _, v in ipairs(meta_dict.tags) do
-      local val_19_auto = ("@" .. v)
-      if (nil ~= val_19_auto) then
-        i_18_auto = (i_18_auto + 1)
-        do end (tbl_17_auto)[i_18_auto] = val_19_auto
+      local val_20_auto = ("@" .. v)
+      if (nil ~= val_20_auto) then
+        i_19_auto = (i_19_auto + 1)
+        do end (tbl_18_auto)[i_19_auto] = val_20_auto
       else
       end
     end
-    return tbl_17_auto
+    return tbl_18_auto
   else
     return vim.fn.split(vim.fn.getline(3), "\\s\\+")
   end
