@@ -26,21 +26,13 @@ local function find_matching_tag(tags, buffer_tags)
     return nil
   end
 end
-local function get_tag_path(tags, buffer_tags)
-  local matching_tag = find_matching_tag(tags, buffer_tags)
-  if matching_tag then
-    return matching_tag.path
-  else
-    return nil
-  end
-end
 local function get_tags()
   local notemeta = require("ajnasznote.notemeta")
-  local meta_dict = notemeta.get_meta_dict()
-  if meta_dict then
+  local meta_tags = notemeta.get_tags()
+  if (meta_tags and (#meta_tags > 0)) then
     local tbl_18_auto = {}
     local i_19_auto = 0
-    for _, v in ipairs(meta_dict.tags) do
+    for _, v in ipairs(meta_tags) do
       local val_20_auto = ("@" .. v)
       if (nil ~= val_20_auto) then
         i_19_auto = (i_19_auto + 1)
@@ -66,7 +58,12 @@ local function buffer_get_tags()
   return out
 end
 local function get_matching_tag(tags)
-  return get_tag_path(tags, buffer_get_tags())
+  local matching_tag = find_matching_tag(tags, buffer_get_tags())
+  if matching_tag then
+    return matching_tag.path
+  else
+    return nil
+  end
 end
 local function get_tag_path_file_dir(tag_path)
   return vim.fn.fnameescape(vim.fn.expand(string.format("%s/%s", vim.g.ajnasznote_directory, tag_path)))
@@ -79,4 +76,4 @@ local function add_match_tags(tags)
   vim.g.ajnasznote_match_tags = vim.list_extend(vim.g.ajnasznote_match_tags, tags)
   return nil
 end
-return {get_tags = get_tags, get_tag_path_file_dir = get_tag_path_file_dir, add_match_tags = add_match_tags, get_matching_tag = get_matching_tag}
+return {get_tag_path_file_dir = get_tag_path_file_dir, add_match_tags = add_match_tags, get_matching_tag = get_matching_tag}

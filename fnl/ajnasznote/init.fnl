@@ -4,18 +4,10 @@
 (fn strip_md_from_title [title]
   (vim.fn.substitute title "^#\\+\\s*" "" ""))
 
-(fn get_buf_title [bufnr]
+(fn get_buf_title []
   (local notemeta (require :ajnasznote.notemeta))
-  (let [meta (notemeta.get_meta_dict)]
-    (if (and meta (. meta :title))
-      (. meta :title)
-      (let [meta_end_line (notemeta.get_meta_end_line bufnr)]
-        (vim.fn.getbufoneline
-          (or bufnr 0)
-          (if meta_end_line (+ meta_end_line 1) 1)
-          )
-        )
-      )
+  (let [ meta_title (notemeta.get_meta_title) ]
+    (or meta_title (notemeta.get_h1))
     )
   )
 
@@ -94,7 +86,7 @@
 
 
 (fn move_note [old_name_arg new_name_arg]
-  (when (= "" new_name) (vim.api.nvim_command "echoerr 'M006: Note name cannot be empty'"))
+  (when (= "" new_name_arg) (vim.api.nvim_command "echoerr 'M006: Note name cannot be empty'"))
   (let [
         resolved_old_name (vim.fn.resolve old_name_arg)
         resolved_new_name (vim.fn.resolve new_name_arg)

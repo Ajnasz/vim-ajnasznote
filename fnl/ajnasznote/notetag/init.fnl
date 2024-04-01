@@ -18,16 +18,11 @@
         tags))))
 
 
-(fn get_tag_path [tags buffer_tags]
-  (let [matching_tag (find_matching_tag tags buffer_tags)]
-    (when matching_tag (. matching_tag "path"))))
-
-
 (fn get_tags []
   (local notemeta (require "ajnasznote.notemeta"))
-  (local meta_dict (notemeta.get_meta_dict))
-  (if meta_dict
-    (icollect [_ v (ipairs (. meta_dict :tags))] (.. "@" v))
+  (local meta_tags (notemeta.get_tags))
+  (if (and meta_tags (> (length meta_tags) 0))
+    (icollect [_ v (ipairs meta_tags)] (.. "@" v))
     (vim.fn.split (vim.fn.getline 3) "\\s\\+"))
   )
 
@@ -44,7 +39,9 @@
   )
 
 (fn get_matching_tag [tags]
-  (get_tag_path tags (buffer_get_tags)))
+  (let [matching_tag (find_matching_tag tags (buffer_get_tags))]
+    (when matching_tag (. matching_tag "path")))
+  )
 
 (fn get_tag_path_file_dir [tag_path]
   (vim.fn.fnameescape (vim.fn.expand (string.format "%s/%s" vim.g.ajnasznote_directory tag_path))))
@@ -55,8 +52,8 @@
   (set vim.g.ajnasznote_match_tags (vim.list_extend vim.g.ajnasznote_match_tags tags)))
 
 
+
 {
- :get_tags get_tags
  :get_tag_path_file_dir get_tag_path_file_dir
  :add_match_tags add_match_tags
  :get_matching_tag get_matching_tag

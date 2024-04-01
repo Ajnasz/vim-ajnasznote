@@ -52,7 +52,76 @@
   nil)
 )
 
+
+(fn get_tags []
+  (local query "
+    (block_mapping_pair
+      key: (flow_node) @key (#eq? @key \"tags\")
+      value: (block_node
+               (block_sequence
+                 (block_sequence_item (flow_node) @tag))))")
+  (local parser (vim.treesitter.get_parser 0 "yaml"))
+  (local q (vim.treesitter.query.parse "yaml" query))
+  (local tags [])
+
+  (each [_ tree (ipairs (parser:trees))]
+    (each [_ qmatch _  (q:iter_matches (tree:root) (parser:source))]
+      (when qmatch
+        (each [id node (pairs qmatch)]
+          (local name (. q.captures id))
+          (when (= name "tag")
+            (local tag (vim.treesitter.get_node_text node (parser:source)))
+            (table.insert tags tag)))
+        )))
+  tags)
+
+(fn get-node-at [id parser query]
+  (let [
+        lang (parser:lang)
+        q (vim.treesitter.query.parse lang query)
+        tree (. (parser:trees) 1)
+        ]
+    (var retnode nil)
+    (each [nid node  (q:iter_captures (tree:root) (parser:source)) &until retnode]
+        (when (= nid id)
+          (set retnode node)))
+    retnode)
+  )
+
+(fn get-first-matching-node [parser query]
+  (let [
+        lang (parser:lang)
+        q (vim.treesitter.query.parse lang query)
+        tree (. (parser:trees) 1)
+        (_id node) ((q:iter_captures (tree:root) (parser:source)))
+        ]
+    node)
+  )
+
+(fn get-meta-title-node [parser]
+  (get-node-at 2 parser "(block_mapping_pair key: (flow_node) @key (#eq? @key \"title\") value: (flow_node) @value)")
+  )
+
+(fn get-meta-title []
+  (local parser (vim.treesitter.get_parser 0 "yaml"))
+  (local node (get-meta-title-node parser))
+  (when node
+    (vim.treesitter.get_node_text node (parser:source)))
+  )
+
+(fn get-h1-node [parser]
+  (get-first-matching-node parser "(atx_heading (atx_h1_marker) heading_content: (inline) @h1)")
+  )
+
+(fn get-h1 []
+  (local parser (vim.treesitter.get_parser))
+  (vim.treesitter.get_node_text (get-h1-node parser) (parser:source))
+  )
+
 {
+ :get_h1 get-h1
+ :get_meta_title get-meta-title
+ :get_tags get_tags
  :get_meta_dict get_meta_dict
  :get_meta_end_line get_meta_end_line
  }

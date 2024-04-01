@@ -3,22 +3,10 @@ local gen_entry = require("ajnasznote.gen_entry")
 local function strip_md_from_title(title)
   return vim.fn.substitute(title, "^#\\+\\s*", "", "")
 end
-local function get_buf_title(bufnr)
+local function get_buf_title()
   local notemeta = require("ajnasznote.notemeta")
-  local meta = notemeta.get_meta_dict()
-  if (meta and meta.title) then
-    return meta.title
-  else
-    local meta_end_line = notemeta.get_meta_end_line(bufnr)
-    local function _1_()
-      if meta_end_line then
-        return (meta_end_line + 1)
-      else
-        return 1
-      end
-    end
-    return vim.fn.getbufoneline((bufnr or 0), _1_())
-  end
+  local meta_title = notemeta.get_meta_title()
+  return (meta_title or notemeta.get_h1())
 end
 local function get_title(bufnr)
   return strip_md_from_title(get_buf_title((bufnr or 0)))
@@ -73,7 +61,7 @@ local function buffer_get_commands()
   return out
 end
 local function move_note(old_name_arg, new_name_arg)
-  if ("" == new_name) then
+  if ("" == new_name_arg) then
     vim.api.nvim_command("echoerr 'M006: Note name cannot be empty'")
   else
   end
@@ -84,10 +72,10 @@ local function move_note(old_name_arg, new_name_arg)
     if ("" == resolved_old_name) then
       return vim.api.nvim_command(string.format("write %s", new_name))
     else
-      local function _6_()
+      local function _4_()
         return vim.api.nvim_command("bd")
       end
-      pcall(_6_)
+      pcall(_4_)
       if (0 == vim.fn.rename(resolved_old_name, new_name)) then
         vim.api.nvim_command(string.format("edit %s", new_name))
         return vim.api.nvim_command("filetype detect")
@@ -152,15 +140,15 @@ local function create_note()
   return vim.cmd(string.format("edit %s/%s.md", vim.fn.expand(vim.g.ajnasznote_directory), vim.fn.strftime("%Y-%m-%d_%H%M%s")))
 end
 local function exec_insert_note()
-  local function _17_(prompt_bufnr, map)
-    local function _18_()
+  local function _15_(prompt_bufnr, map)
+    local function _16_()
       require("telescope.actions").close(prompt_bufnr)
       return insert_note({require("telescope.actions.state").get_selected_entry().path})
     end
-    map("i", "<cr>", _18_)
+    map("i", "<cr>", _16_)
     return true
   end
-  return require("telescope.builtin").live_grep({cwd = vim.g.ajnasznote_directory, attach_mappings = _17_})
+  return require("telescope.builtin").live_grep({cwd = vim.g.ajnasznote_directory, attach_mappings = _15_})
 end
 local function note_explore()
   return vim.cmd(string.format("Lexplore %s", vim.g.ajnasznote_directory))
