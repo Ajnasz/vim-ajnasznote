@@ -1,74 +1,16 @@
 (local notetag (require :ajnasznote.notetag))
-(local gen_entry (require :ajnasznote.gen_entry))
-
-(fn strip_md_from_title [title]
-  (vim.fn.substitute title "^#\\+\\s*" "" ""))
-
-(fn get_buf_title []
-  (local notemeta (require :ajnasznote.notemeta))
-  (let [ meta_title (notemeta.get_meta_title) ]
-    (or meta_title (notemeta.get_h1))
-    )
-  )
-
-(fn get_title [bufnr]
-  (strip_md_from_title (get_buf_title (or bufnr 0))))
-
-(fn get_note_title [path]
-    (get_title (vim.fn.bufnr path true)) (vim.fn.fnamemodify path ":t"))
-
-(fn remove_accent_chars [name]
-  (let [chars {
-               "á" "a"
-               "é" "e"
-               "í" "i"
-               "ó" "o"
-               "ö" "o"
-               "ő" "o"
-               "ú" "u"
-               "ü" "u"
-               "ű" "u"
-               "Á" "A"
-               "É" "E"
-               "Í" "I"
-               "Ó" "O"
-               "Ö" "O"
-               "Ő" "O"
-               "Ú" "U"
-               "Ü" "U"
-               "Ű" "U"
-               }]
-    (var n name)
-    (each [key char (pairs chars)]
-      (set n (vim.fn.substitute n key char "g"))
-      ) n)
-  )
-(fn remove_leading_char [char input]
-  (if (= char (string.sub input 1 1))
-    (remove_leading_char char (string.sub input 2))
-    input))
-
-(fn to_en_only_file_name [name]
-  (string.lower
-    (remove_leading_char
-      "_"
-      (string.gsub (remove_accent_chars name) "[^%a%d_-]+" "_"))))
-
-(fn to_safe_file_name [name]
-  (to_en_only_file_name name)
-  ; (local str (require :ajnasznote.strings))
-  ; (str.trim name)
-  )
+(local notepath (require :ajnasznote.notepath))
+(local notetitle (require :ajnasznote.notetitle))
 
 (fn get_rel_path [p]
   (let [current (vim.fn.expand "%:p:h")]
     ((. (require :pl.path) :relpath) p current)))
 
-(fn get_link [p]
-  (let [rel_path (get_rel_path p)]
-    (string.format "[%s](%s)" (get_note_title p) rel_path)))
+(fn format_link [notepath]
+  (let [rel_path (get_rel_path notepath)]
+    (string.format "[%s](%s)" (notetitle.get_note_title notepath) rel_path)))
 
-(fn insert_note [lines] (vim.cmd (string.format "normal! a%s" (get_link (. lines 1)))))
+(fn insert_note [lines] (vim.cmd (string.format "normal! a%s" (format_link (. lines 1)))))
 
 (fn buffer_get_commands []
   (accumulate
@@ -83,7 +25,6 @@
       out)
     )
   )
-
 
 (fn move_note [old_name_arg new_name_arg]
   (when (= "" new_name_arg) (vim.api.nvim_command "echoerr 'M006: Note name cannot be empty'"))
@@ -125,7 +66,7 @@
   (when (= 0 (vim.fn.isdirectory dirname)) (vim.api.nvim_command "M004: Not a directory")))
 
 (fn get_new_file_name [bufnr]
-  (let [title (to_safe_file_name (get_title bufnr))]
+  (let [title (notepath.to_safe_file_name (notetitle.get_title bufnr))]
     (when (not (= title ""))
       (let [file_path (get_note_dir)]
         (when file_path
@@ -140,7 +81,6 @@
         (move_note (vim.fn.expand "%:p") new_name)
         )))
   )
-
 
 (fn create_note []
   (vim.cmd
@@ -166,13 +106,6 @@
 
 (fn note_explore []
   (vim.cmd (string.format "Lexplore %s" vim.g.ajnasznote_directory)))
-
-
-(fn path_display [opts path]
-  (local utils (require "telescope.utils"))
-  (local tail (utils.path_tail path))
-  (string.format "%s (%s)" tail path)
-  )
 
 (fn grep_in_notes []
   ((. (require :telescope.builtin) :live_grep)
@@ -242,6 +175,6 @@
  :create_note create_note
  :insert_note exec_insert_note
  :setup setup
- :get_title get_title
+ :get_title notetitle.get_title
  :find_links find_links
  }

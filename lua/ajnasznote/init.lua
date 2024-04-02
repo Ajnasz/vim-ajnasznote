@@ -1,51 +1,16 @@
 local notetag = require("ajnasznote.notetag")
-local gen_entry = require("ajnasznote.gen_entry")
-local function strip_md_from_title(title)
-  return vim.fn.substitute(title, "^#\\+\\s*", "", "")
-end
-local function get_buf_title()
-  local notemeta = require("ajnasznote.notemeta")
-  local meta_title = notemeta.get_meta_title()
-  return (meta_title or notemeta.get_h1())
-end
-local function get_title(bufnr)
-  return strip_md_from_title(get_buf_title((bufnr or 0)))
-end
-local function get_note_title(path)
-  get_title(vim.fn.bufnr(path, true))
-  return vim.fn.fnamemodify(path, ":t")
-end
-local function remove_accent_chars(name)
-  local chars = {["\195\161"] = "a", ["\195\169"] = "e", ["\195\173"] = "i", ["\195\179"] = "o", ["\195\182"] = "o", ["\197\145"] = "o", ["\195\186"] = "u", ["\195\188"] = "u", ["\197\177"] = "u", ["\195\129"] = "A", ["\195\137"] = "E", ["\195\141"] = "I", ["\195\147"] = "O", ["\195\150"] = "O", ["\197\144"] = "O", ["\195\154"] = "U", ["\195\156"] = "U", ["\197\176"] = "U"}
-  local n = name
-  for key, char in pairs(chars) do
-    n = vim.fn.substitute(n, key, char, "g")
-  end
-  return n
-end
-local function remove_leading_char(char, input)
-  if (char == string.sub(input, 1, 1)) then
-    return remove_leading_char(char, string.sub(input, 2))
-  else
-    return input
-  end
-end
-local function to_en_only_file_name(name)
-  return string.lower(remove_leading_char("_", string.gsub(remove_accent_chars(name), "[^%a%d_-]+", "_")))
-end
-local function to_safe_file_name(name)
-  return to_en_only_file_name(name)
-end
+local notepath = require("ajnasznote.notepath")
+local notetitle = require("ajnasznote.notetitle")
 local function get_rel_path(p)
   local current = vim.fn.expand("%:p:h")
   return require("pl.path").relpath(p, current)
 end
-local function get_link(p)
-  local rel_path = get_rel_path(p)
-  return string.format("[%s](%s)", get_note_title(p), rel_path)
+local function format_link(notepath0)
+  local rel_path = get_rel_path(notepath0)
+  return string.format("[%s](%s)", notetitle.get_note_title(notepath0), rel_path)
 end
 local function insert_note(lines)
-  return vim.cmd(string.format("normal! a%s", get_link(lines[1])))
+  return vim.cmd(string.format("normal! a%s", format_link(lines[1])))
 end
 local function buffer_get_commands()
   local out = {}
@@ -72,10 +37,10 @@ local function move_note(old_name_arg, new_name_arg)
     if ("" == resolved_old_name) then
       return vim.api.nvim_command(string.format("write %s", new_name))
     else
-      local function _4_()
+      local function _3_()
         return vim.api.nvim_command("bd")
       end
-      pcall(_4_)
+      pcall(_3_)
       if (0 == vim.fn.rename(resolved_old_name, new_name)) then
         vim.api.nvim_command(string.format("edit %s", new_name))
         return vim.api.nvim_command("filetype detect")
@@ -115,7 +80,7 @@ local function mk_note_dir(dirname)
   end
 end
 local function get_new_file_name(bufnr)
-  local title = to_safe_file_name(get_title(bufnr))
+  local title = notepath.to_safe_file_name(notetitle.get_title(bufnr))
   if not (title == "") then
     local file_path = get_note_dir()
     if file_path then
@@ -140,23 +105,18 @@ local function create_note()
   return vim.cmd(string.format("edit %s/%s.md", vim.fn.expand(vim.g.ajnasznote_directory), vim.fn.strftime("%Y-%m-%d_%H%M%s")))
 end
 local function exec_insert_note()
-  local function _15_(prompt_bufnr, map)
-    local function _16_()
+  local function _14_(prompt_bufnr, map)
+    local function _15_()
       require("telescope.actions").close(prompt_bufnr)
       return insert_note({require("telescope.actions.state").get_selected_entry().path})
     end
-    map("i", "<cr>", _16_)
+    map("i", "<cr>", _15_)
     return true
   end
-  return require("telescope.builtin").live_grep({cwd = vim.g.ajnasznote_directory, attach_mappings = _15_})
+  return require("telescope.builtin").live_grep({cwd = vim.g.ajnasznote_directory, attach_mappings = _14_})
 end
 local function note_explore()
   return vim.cmd(string.format("Lexplore %s", vim.g.ajnasznote_directory))
-end
-local function path_display(opts, path)
-  local utils = require("telescope.utils")
-  local tail = utils.path_tail(path)
-  return string.format("%s (%s)", tail, path)
 end
 local function grep_in_notes()
   return require("telescope.builtin").live_grep({cwd = vim.g.ajnasznote_directory, disable_devicons = true, disable_coordinates = true})
@@ -197,4 +157,4 @@ local function setup(config)
   vim.api.nvim_create_autocmd({"BufRead", "BufNewFile", "BufEnter"}, {group = augroup, pattern = {(vim.g.ajnasznote_directory .. "/*.md")}, command = "set conceallevel=2 wrap lbr tw=80 wrapmargin=0 showbreak=\\\\n>"})
   return vim.api.nvim_create_autocmd({"BufWritePost"}, {group = augroup, pattern = {(vim.g.ajnasznote_directory .. "/*.md")}, callback = rename_note})
 end
-return {buffer_get_commands = buffer_get_commands, rename_note = rename_note, add_match_tags = notetag.add_match_tags, create_note = create_note, insert_note = exec_insert_note, setup = setup, get_title = get_title, find_links = find_links}
+return {buffer_get_commands = buffer_get_commands, rename_note = rename_note, add_match_tags = notetag.add_match_tags, create_note = create_note, insert_note = exec_insert_note, setup = setup, get_title = notetitle.get_title, find_links = find_links}
