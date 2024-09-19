@@ -101,8 +101,8 @@ end
 local function get_meta_title_node(parser)
   return get_node_at(2, parser, "(block_mapping_pair key: (flow_node) @key (#eq? @key \"title\") value: (flow_node) @value)")
 end
-local function get_meta_title()
-  local parser = vim.treesitter.get_parser(0, "yaml")
+local function get_meta_title(bufnr)
+  local parser = vim.treesitter.get_parser(bufnr, "yaml")
   local node = get_meta_title_node(parser)
   if node then
     return vim.treesitter.get_node_text(node, parser:source())
@@ -113,8 +113,8 @@ end
 local function get_h1_node(parser)
   return get_first_matching_node(parser, "(atx_heading (atx_h1_marker) heading_content: (inline) @h1)")
 end
-local function get_h1()
-  local parser = vim.treesitter.get_parser()
+local function get_h1(bufnr)
+  local parser = vim.treesitter.get_parser(bufnr, "markdown")
   return vim.treesitter.get_node_text(get_h1_node(parser), parser:source())
 end
 return {get_h1 = get_h1, get_meta_title = get_meta_title, get_tags = get_tags, get_meta_dict = get_meta_dict, get_meta_end_line = get_meta_end_line}

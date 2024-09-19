@@ -102,8 +102,8 @@
   (get-node-at 2 parser "(block_mapping_pair key: (flow_node) @key (#eq? @key \"title\") value: (flow_node) @value)")
   )
 
-(fn get-meta-title []
-  (local parser (vim.treesitter.get_parser 0 "yaml"))
+(fn get-meta-title [bufnr]
+  (local parser (vim.treesitter.get_parser bufnr "yaml"))
   (local node (get-meta-title-node parser))
   (when node
     (vim.treesitter.get_node_text node (parser:source)))
@@ -113,8 +113,8 @@
   (get-first-matching-node parser "(atx_heading (atx_h1_marker) heading_content: (inline) @h1)")
   )
 
-(fn get-h1 []
-  (local parser (vim.treesitter.get_parser))
+(fn get-h1 [bufnr]
+  (local parser (vim.treesitter.get_parser bufnr "markdown"))
   (vim.treesitter.get_node_text (get-h1-node parser) (parser:source))
   )
 
