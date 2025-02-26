@@ -61,17 +61,20 @@
                (block_sequence
                  (block_sequence_item (flow_node) @tag))))")
   (local parser (vim.treesitter.get_parser 0 "yaml"))
+  (parser:parse [1 50])
   (local q (vim.treesitter.query.parse "yaml" query))
   (local tags [])
 
   (each [_ tree (ipairs (parser:trees))]
     (each [_ qmatch _  (q:iter_matches (tree:root) (parser:source))]
+
       (when qmatch
-        (each [id node (pairs qmatch)]
+        (each [id nodes (pairs qmatch)]
           (local name (. q.captures id))
           (when (= name "tag")
-            (local tag (vim.treesitter.get_node_text node (parser:source)))
-            (table.insert tags tag)))
+            (each [_ node (ipairs nodes)]
+              (local tag (vim.treesitter.get_node_text node (parser:source)))
+              (table.insert tags tag))))
         )))
   tags)
 
@@ -104,6 +107,7 @@
 
 (fn get-meta-title [bufnr]
   (local parser (vim.treesitter.get_parser bufnr "yaml"))
+  (parser:parse [1 50])
   (local node (get-meta-title-node parser))
   (when node
     (vim.treesitter.get_node_text node (parser:source)))
@@ -115,11 +119,23 @@
 
 (fn get-h1 [bufnr]
   (local parser (vim.treesitter.get_parser bufnr "markdown"))
+  (parser:parse [1 50])
   (vim.treesitter.get_node_text (get-h1-node parser) (parser:source))
+  )
+
+(fn get-h1-callback [bufnr cb]
+  (local parser (vim.treesitter.get_parser bufnr "markdown"))
+  (parser:parse [1 50] (fn [err trees]
+                         (if err
+                           (cb err)
+                           (cb nil (vim.treesitter.get_node_text (get-h1-node parser) (parser:source)))
+                           )
+                         ))
   )
 
 {
  :get_h1 get-h1
+ :get_h1_cb get-h1-callback
  :get_meta_title get-meta-title
  :get_tags get_tags
  :get_meta_dict get_meta_dict
